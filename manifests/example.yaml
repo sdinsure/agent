@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-client
+  namespace: example
+  labels:
+    app: example-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: example-client
+  template:
+    metadata:
+      labels:
+        app: example-client
+    spec:
+      containers:
+      - name: main
+        image: footprintai/sdinsure-example:latest
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Gi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        ports:
+        - containerPort: 50091
+        - containerPort: 50092
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - >-
+              /out/example-client
+              --server_addr=http://example-server:50091
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: example-client
+  name: example-client
+  namespace: example
+spec:
+  ports:
+    - port: 8888
+      protocol: TCP
+      name: http-metrics
+  selector:
+    app: example-client
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-server
+  namespace: example
+  labels:
+    app: example-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: example-server
+  template:
+    metadata:
+      labels:
+        app: example-server
+    spec:
+      containers:
+      - name: main
+        image: footprintai/sdinsure-example:latest
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Gi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        ports:
+        - containerPort: 50091
+        - containerPort: 50092
+        - containerPort: 8888
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - >-
+              /out/example-server
+              --grpc_port=50090
+              --http_port=50091
+              --otel_export=otel-agent-collector:4317
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: example-server
+  name: example-server
+  namespace: example
+spec:
+  ports:
+    - port: 50090
+      targetPort: 50090
+      protocol: TCP
+      name: grpc
+    - port: 50091
+      targetPort: 50091
+      protocol: TCP
+      name: grpcgateway
+    - port: 8888
+      protocol: TCP
+      name: http-metrics
+  selector:
+    app: example-server
+---
