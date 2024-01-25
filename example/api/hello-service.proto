@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option go_package = "github.com/sdinsure/agent/example/api/pb";
+package example.api;
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+service HelloService {
+    rpc SayHello (HelloRequest) returns (HelloResponse){
+        option (google.api.http) = {
+              get: "/v1/hello"
+          };
+    }
+
+    rpc SayHelloStream (stream HelloRequest) returns (stream HelloResponse){
+        option (google.api.http) = {
+              get: "/v1/hello:stream"
+          };
+    }
+}
+
+message HelloRequest {
+  string greeting = 1;
+}
+
+message HelloResponse {
+  string reply = 1;
+}
