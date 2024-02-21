@@ -15,6 +15,10 @@ import (
 	loggerflags "github.com/sdinsure/agent/pkg/logger/flags"
 )
 
+var (
+	_ Logger = &loggerImpl{}
+)
+
 type loggerImpl struct {
 	*zap.Logger
 }
