@@ -16,6 +16,7 @@ const (
 	_                    Code = iota // Skip the first value of 0
 	CodeNotFound                     // CodeNotFound = 1
 	CodeStatusConflicted             // CodeStatusConflicted = 2
+	CodeInvalidAuth
 	CodeBadParameters
 	CodeTimeout
 	CodeInternal
@@ -105,6 +106,10 @@ func NewUnknownError(err error) *Error {
 
 func NewStatusConflicted(err error) *Error {
 	return New(CodeStatusConflicted, err)
+}
+
+func NewInvalidAuth(err error) *Error {
+	return New(CodeInvalidAuth, err)
 }
 
 func NewTimeoutError(err error) *Error {
