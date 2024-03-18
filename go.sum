@@ -9,8 +9,8 @@ github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.20.0
 github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef/go.mod h1:WaHUgvxTVq04UNunO+XhnAqY/wQc+bxr74GqbsZ/Jqw=
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 h1:DklsrG3dyBCFEj5IhUbnKptjxatkF07cF2ak3yi77so=
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2/go.mod h1:WaHUgvxTVq04UNunO+XhnAqY/wQc+bxr74GqbsZ/Jqw=
-github.com/aws/aws-sdk-go v1.47.9 h1:rarTsos0mA16q+huicGx0e560aYRtOucV5z2Mw23JRY=
-github.com/aws/aws-sdk-go v1.47.9/go.mod h1:LF8svs817+Nz+DmiMQKTO3ubZ/6IaTpq3TjupRn3Eqk=
+github.com/aws/aws-sdk-go v1.50.15 h1:wEMnPfEQQFaoIJwuO18zq/vtG4Ft7NxQ3r9xlEi/8zg=
+github.com/aws/aws-sdk-go v1.50.15/go.mod h1:LF8svs817+Nz+DmiMQKTO3ubZ/6IaTpq3TjupRn3Eqk=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
@@ -282,8 +282,8 @@ github.com/zeromicro/go-zero v1.6.1/go.mod h1:slLvzqPP/H/h9ABq9ykNOuX6pYLjA8Uy3R
 go.mongodb.org/mongo-driver v1.10.0/go.mod h1:wsihk0Kdgv8Kqu1Anit4sfK+22vSFbUrAVEYRhCXrA8=
 go.mongodb.org/mongo-driver v1.14.0 h1:P98w8egYRjYe3XDjxhYJagTokP/H6HzlsnojRgZRd80=
 go.mongodb.org/mongo-driver v1.14.0/go.mod h1:Vzb0Mk/pa7e6cWw85R4F/endUC3u0U9jGcNU603k65c=
-go.opentelemetry.io/contrib/detectors/aws/ec2 v1.21.1 h1:CUYilK1UkIUpdtYrku1Rb6t2e7AJeIcCs37/fTTs+HI=
-go.opentelemetry.io/contrib/detectors/aws/ec2 v1.21.1/go.mod h1:8X6bRmDQ4PMy7iVK7qor/eHnI00S2+q4BM0ukcMEl0s=
+go.opentelemetry.io/contrib/detectors/aws/ec2 v1.24.0 h1:mdgKu9aAl3uNPmFFYhJoEhtnAEbpOiUEm672moYowTs=
+go.opentelemetry.io/contrib/detectors/aws/ec2 v1.24.0/go.mod h1:pLGyW++QzweLK2DV29J9LeZf01n7nEL+y7Yaxg5JA/k=
 go.opentelemetry.io/contrib/detectors/aws/ecs v1.24.0 h1:vlXyBuA+RLO5gaWLzqVcCZvJTYOI9F/fIri4dOVtyQ4=
 go.opentelemetry.io/contrib/detectors/aws/ecs v1.24.0/go.mod h1:hqNzhk2tPgFAYfJtnOt1XiVGTSCFyiF/nBtLxMtNV8k=
 go.opentelemetry.io/contrib/detectors/gcp v1.21.1 h1:VLAa8mb2eMu2Iq9pnVhece0Yla2mIq1yKYLUoZ/ifJs=
