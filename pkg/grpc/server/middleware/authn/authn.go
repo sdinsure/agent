@@ -63,14 +63,12 @@ func newOption(opts ...Optional) *Option {
 	return o
 }
 
-func NewAuthNMiddleware(l logger.Logger, claimParser ClaimParser, option ...Optional) *AuthNMiddleware {
-
-	option := newOption(options...)
+func NewAuthNMiddleware(l logger.Logger, claimParser ClaimParser, options ...Optional) *AuthNMiddleware {
 	return &AuthNMiddleware{
 		log:         l,
 		tokenParser: &bearerTokenParser{l: l},
 		claimParser: claimParser,
-		option:      option,
+		option:      newOption(options...),
 	}
 }
 
@@ -78,6 +76,7 @@ type AuthNMiddleware struct {
 	log         logger.Logger
 	tokenParser TokenParser
 	claimParser ClaimParser
+	option      *Option
 }
 
 func (a *AuthNMiddleware) AuthFunc(ctx context.Context) (context.Context, error) {
@@ -91,7 +90,7 @@ func (a *AuthNMiddleware) AuthFunc(ctx context.Context) (context.Context, error)
 	}
 
 	if len(token) > 0 {
-		a.log.Info(ctx, "token found, parsing its claim\n")
+		a.log.Infox(ctx, "token found, parsing its claim\n")
 		claims, err = a.claimParser.ParseClaim(ctx, token)
 		if err != nil {
 			a.log.Error("auth: invalid auth tokne:%v\n", err)
@@ -102,7 +101,7 @@ func (a *AuthNMiddleware) AuthFunc(ctx context.Context) (context.Context, error)
 		claims = annonymous{}
 	}
 
-	sub, _ := userClaim.GetSubject()
+	sub, _ := claims.GetSubject()
 	a.log.Info("auth: populate relavant info to ctx\n")
 	return runtime.WithKeyInfo(
 		runtime.WithClaimInfo(
