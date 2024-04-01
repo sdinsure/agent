@@ -10,12 +10,11 @@ import (
 )
 
 func NewServerService(
-	grpcPort int,
 	httpPort int,
 	log logger.Logger,
 ) (*ServerService, error) {
 
-	svr := grpcserver.NewGrpcServerWithInterceptors(grpcPort, log, nil, nil, nil)
+	svr := grpcserver.NewGrpcServerWithInterceptors(log, nil, nil, nil)
 	httpGateway, err := grpchttpgatewayserver.NewHTTPGatewayServer(svr, log, httpPort)
 	if err != nil {
 		return nil, err

@@ -24,8 +24,8 @@ type metricSvr struct {
 
 func (m *metricSvr) ListenAndServe() {
 	http.Handle("/metrics", promhttp.Handler())
-	err := http.ListenAndServe(fmt.Sprintf(":%d".m.port), nil)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", m.port), nil)
 	if err != nil {
-		log.Fatalf(err)
+		log.Fatalf("%+v", err)
 	}
 }
