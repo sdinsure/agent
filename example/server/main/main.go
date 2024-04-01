@@ -14,7 +14,6 @@ import (
 	"github.com/sdinsure/agent/pkg/version"
 )
 
-var grpcPort = flag.Int("grpc_port", 50090, "The server grpc port")
 var httpPort = flag.Int("http_port", 50091, "The server http port")
 var otelExportAddr = flag.String("otel_export", "localhost:4317", "otel export grpc address")
 
@@ -57,7 +56,7 @@ func main() {
 		otel.ShutdownAll(ctx, otelMetricService, otelTraceService)
 	}()
 
-	svr, err := appserver.NewServerService(*grpcPort, *httpPort, log)
+	svr, err := appserver.NewServerService(*httpPort, log)
 	if err != nil {
 		log.Fatal("failed to start server, err:%+v\n", err)
 	}

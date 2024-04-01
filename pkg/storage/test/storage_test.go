@@ -16,6 +16,10 @@ import (
 )
 
 func TestStorage(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skip this test in short mode")
+		return
+	}
 	// launch postgres with the following command
 	// docker run --rm --name postgres \
 	// -e TZ=gmt+8 \
