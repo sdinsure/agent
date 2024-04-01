@@ -20,9 +20,11 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 
 	grpcserver "github.com/sdinsure/agent/pkg/grpc/server"
+	"github.com/sdinsure/agent/pkg/grpc/server/runtime"
 	"github.com/sdinsure/agent/pkg/logger"
 )
 
@@ -44,9 +46,9 @@ func defaultHTTPGatewayServerConfig(log logger.Logger) HTTPGatewayServerConfig {
 			pkgruntime.WithForwardResponseOption(responseHeaderMatcher),
 			pkgruntime.WithIncomingHeaderMatcher(customizedHttpIncomingHeaderMatcher),
 			pkgruntime.WithOutgoingHeaderMatcher(customizedHttpOutgoingHeaderMatcher),
-			//pkgruntime.WithMetadata(func(ctx context.Context, r *http.Request) metadata.MD {
-			//	return runtime.ForwardHttpToMetadata(ctx, r)
-			//}),
+			pkgruntime.WithMetadata(func(ctx context.Context, r *http.Request) metadata.MD {
+				return runtime.ForwardHttpToMetadata(ctx, r)
+			}),
 		},
 	}
 }
