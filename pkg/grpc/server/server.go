@@ -19,11 +19,49 @@ import (
 
 var withReflection = flag.Bool("with_grpc_reflection", false, "turn on grpc reflection")
 
-func NewGrpcServer(port int, logger pkglogger.Logger) *GrpcServer {
-	return NewGrpcServerWithInterceptors(port, logger, nil, nil, nil)
+type option struct {
+	grpcPort int
 }
 
-func NewGrpcServerWithInterceptors(port int, logger pkglogger.Logger, serverOpts []grpc.ServerOption, unaryInterceptors []grpc.UnaryServerInterceptor, streamInterceptors []grpc.StreamServerInterceptor) *GrpcServer {
+func newOption(optioners ...Optioner) *option {
+	o := &option{}
+
+	for _, optioner := range optioners {
+		optioner.apply(o)
+	}
+
+	return o
+}
+
+type Optioner interface {
+	apply(o *option)
+}
+
+type withGrpcPort struct {
+	grpcPort int
+}
+
+func (w withGrpcPort) apply(o *option) {
+	o.grpcPort = w.grpcPort
+}
+
+func WithGrpcPort(p int) withGrpcPort {
+	return withGrpcPort{grpcPort: p}
+}
+
+func NewGrpcServer(logger pkglogger.Logger, optioners ...Optioner) *GrpcServer {
+	return NewGrpcServerWithInterceptors(logger, nil, nil, nil, optioners...)
+}
+
+func NewGrpcServerWithInterceptors(
+	logger pkglogger.Logger,
+	serverOpts []grpc.ServerOption,
+	unaryInterceptors []grpc.UnaryServerInterceptor,
+	streamInterceptors []grpc.StreamServerInterceptor,
+	optioners ...Optioner,
+) *GrpcServer {
+	opt := newOption(optioners...)
+
 	beforeMiddlewares := servermiddleware.MultiServerMiddleware(
 		[]servermiddleware.ServerMiddleware{
 			loggermiddleware.NewTagMiddlware(),
@@ -55,9 +93,9 @@ func NewGrpcServerWithInterceptors(port int, logger pkglogger.Logger, serverOpts
 		reflection.Register(grpcServer)
 	}
 	return &GrpcServer{
-		port:   port,
 		logger: logger,
 		Server: grpcServer,
+		opt:    opt,
 	}
 }
 
@@ -70,27 +108,33 @@ func appendMulti[T any](slices ...[]T) []T {
 }
 
 type GrpcServer struct {
-	port   int
+	opt    *option
 	logger pkglogger.Logger
 	*grpc.Server
+
+	// listenerAddr was setted when the grpc server is up and running
+	listenerAddr net.Addr
 }
 
 func (g *GrpcServer) ListenAndServe() error {
 	var lc net.ListenConfig
-	grpcAddr := fmt.Sprintf(":%d", g.port)
-	g.logger.Info("grpc: listen and serve %s\n", grpcAddr)
+	grpcAddr := fmt.Sprintf(":%d", g.opt.grpcPort) // dial any port
 	li, err := lc.Listen(context.Background(), "tcp", grpcAddr)
 	if err != nil {
 		return err
 	}
+	g.listenerAddr = li.Addr()
+	g.logger.Info("grpc: listen and serve %s\n", li.Addr().String())
 	return g.Server.Serve(li)
 }
 
 func (g *GrpcServer) LocalAddr() string {
-	s := fmt.Sprintf("127.0.0.1:%d", g.port)
-
-	g.logger.Info("grpc local addr:%s\n", s)
-	return s
+	var addr string
+	if g.listenerAddr != nil {
+		addr = g.listenerAddr.String()
+	}
+	g.logger.Info("grpc local addr:%s\n", addr)
+	return addr
 }
 
 func (g *GrpcServer) GracefulStop() {
