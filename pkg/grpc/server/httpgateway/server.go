@@ -237,7 +237,7 @@ type HTTPGatewayServer struct {
 	port       int
 	log        logger.Logger
 	grpcServer *grpcserver.GrpcServer
-	grpcConn   *grpc.ClientConn
+	grpcConn   *grpcclient.GrpcLazyClient
 	ctx        context.Context
 	serveMux   *pkgruntime.ServeMux
 	httpMux    *http.ServeMux
@@ -252,7 +252,7 @@ func (h *HTTPGatewayServer) AddRoutes(routes ...*Route) error {
 	return nil
 }
 
-type GatewayHandlerFunc func(ctx context.Context, mux *pkgruntime.ServeMux, conn *grpc.ClientConn) error
+type GatewayHandlerFunc func(ctx context.Context, mux *pkgruntime.ServeMux, conn grpc.ClientConnInterface) error
 
 func (h *HTTPGatewayServer) RegisterHandlers(handlerfuncs ...GatewayHandlerFunc) error {
 	for _, handlerfunc := range handlerfuncs {
