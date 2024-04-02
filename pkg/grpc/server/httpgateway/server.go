@@ -23,6 +23,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 
+	grpcclient "github.com/sdinsure/agent/pkg/grpc/client"
 	grpcserver "github.com/sdinsure/agent/pkg/grpc/server"
 	"github.com/sdinsure/agent/pkg/grpc/server/runtime"
 	"github.com/sdinsure/agent/pkg/logger"
@@ -92,7 +93,7 @@ func NewHTTPGatewayServer(g *grpcserver.GrpcServer, log logger.Logger, port int,
 		//grpc.WithTransportCredentials(credentials.NewClientTLSCredentials()),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
-	conn, err := grpc.Dial(g.LocalAddr(), opts...)
+	conn, err := grpcclient.NewLazyGrpcClient(log, g, opts...)
 	if err != nil {
 		return nil, err
 	}
