@@ -92,7 +92,11 @@ func NewHTTPGatewayServer(g *grpcserver.GrpcServer, log logger.Logger, port int,
 		//grpc.WithTransportCredentials(credentials.NewClientTLSCredentials()),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
-	conn, err := grpc.Dial(g.LocalAddr(), opts...)
+	addr, err := g.LocalAddr()
+	if err != nil {
+		return nil, err
+	}
+	conn, err := grpc.Dial(addr, opts...)
 	if err != nil {
 		return nil, err
 	}

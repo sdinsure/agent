@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -27,7 +26,8 @@ func TestServer(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	fmt.Printf("%s\n", svr.LocalAddr())
+	addr, err := svr.LocalAddr()
+	assert.NoError(t, err)
 	opts := []grpc.DialOption{
 		grpc.WithBlock(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -35,7 +35,7 @@ func TestServer(t *testing.T) {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancelFunc()
 
-	conn, err := grpc.DialContext(ctx, svr.LocalAddr(), opts...)
+	conn, err := grpc.DialContext(ctx, addr, opts...)
 	assert.NoError(t, err)
 	assert.NoError(t, conn.Close())
 }
@@ -54,7 +54,9 @@ func TestServer44138(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	assert.True(t, strings.HasSuffix(svr.LocalAddr(), ":44138"))
+	addr, err := svr.LocalAddr()
+	assert.NoError(t, err)
+	assert.True(t, strings.HasSuffix(addr, ":44138"))
 	opts := []grpc.DialOption{
 		grpc.WithBlock(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -62,7 +64,7 @@ func TestServer44138(t *testing.T) {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancelFunc()
 
-	conn, err := grpc.DialContext(ctx, svr.LocalAddr(), opts...)
+	conn, err := grpc.DialContext(ctx, addr, opts...)
 	assert.NoError(t, err)
 	assert.NoError(t, conn.Close())
 }
