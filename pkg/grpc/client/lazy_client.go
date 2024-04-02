@@ -38,7 +38,6 @@ type GrpcLazyClient struct {
 }
 
 func (l *GrpcLazyClient) dialOnce() error {
-	var err error
 	l.once.Do(func() {
 		l.resolvedServerAddr = l.addrResolver.LocalAddr()
 		l.clientConn, l.dialedErr = grpc.Dial(l.resolvedServerAddr, l.dialOpts...)
@@ -60,7 +59,7 @@ func (l *GrpcLazyClient) Invoke(ctx context.Context, method string, args interfa
 
 func (l *GrpcLazyClient) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 	if err := l.dialOnce(); err != nil {
-		return err
+		return nil, err
 	}
 
 	return l.clientConn.NewStream(ctx, desc, method, opts...)
