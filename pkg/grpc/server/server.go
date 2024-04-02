@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"net"
@@ -128,13 +129,18 @@ func (g *GrpcServer) ListenAndServe() error {
 	return g.Server.Serve(li)
 }
 
-func (g *GrpcServer) LocalAddr() string {
+func (g *GrpcServer) LocalAddr() (string, error) {
 	var addr string
+	var err error
 	if g.listenerAddr != nil {
 		addr = g.listenerAddr.String()
+	} else if g.opt.grpcPort > 0 {
+		addr = fmt.Sprintf("127.0.0.1:%d", g.opt.grpcPort)
+	} else {
+		err = errors.New("localaddr is not ready")
 	}
 	g.logger.Info("grpc local addr:%s\n", addr)
-	return addr
+	return addr, err
 }
 
 func (g *GrpcServer) GracefulStop() {
