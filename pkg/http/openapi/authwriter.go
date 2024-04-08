@@ -2,12 +2,13 @@ package openapi
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 
-	"github.com/sdinsure/agent/pkg/errors"
+	sdinsureerrors "github.com/sdinsure/agent/pkg/errors"
 	sdinsureruntime "github.com/sdinsure/agent/pkg/grpc/server/runtime"
 )
 
@@ -26,7 +27,7 @@ var (
 func (c *ContextClientAuthInfoWriter) AuthenticateRequest(clientRequest runtime.ClientRequest, registry strfmt.Registry) error {
 	keyVal, foundKey := sdinsureruntime.KeyInfo(c.ctx)
 	if !foundKey {
-		return errors.NewInvalidAuth(errors.New("auth: keyinfo not found"))
+		return sdinsureerrors.NewInvalidAuth(errors.New("auth: keyinfo not found"))
 	}
 	return clientRequest.SetHeaderParam("Authorization", fmt.Sprintf("Bearer %s", keyVal))
 }
