@@ -14,7 +14,7 @@ type ProjectResolver interface {
 	WithProjectInfo(ctx context.Context, req interface{}) context.Context
 
 	// ProjectInfo retrieves project information from context
-	ProjectInfo(ctx context.Context) (ProjectInfor, error)
+	ProjectInfo(ctx context.Context) (ProjectInfor, bool)
 }
 
 func NewProjectResolver(log logger.Logger, projectGetter ProjectGetter) *projectResolver {
@@ -41,17 +41,18 @@ func (i *projectResolver) WithProjectInfo(ctx context.Context, req interface{}) 
 		return context.WithValue(ctx, projectInfoKey{}, invalidProjectInfor{projectId})
 	}
 	i.log.Infox(ctx, "projectresolver, project Id:%+v\n", projectId)
-	projectInfor, err := i.projectGetter(ctx, projectId)
+	projectInfor, err := i.projectGetter.GetProject(ctx, projectId)
 	if err != nil {
 		i.log.Error("projectresolver: failed to lookup project from id:%s", projectId)
 		return context.WithValue(ctx, projectInfoKey{}, invalidProjectInfor{projectId})
 	}
-	i.log.Infox(ctx, "projectresolver, project model:%+v\n", projectmodel)
+	i.log.Infox(ctx, "projectresolver, project inform:%+v\n", projectInfor)
 	return context.WithValue(ctx, projectInfoKey{}, projectInfor)
 }
 
 type ProjectInfor interface {
-	GetProject() (any, error)
+	GetProjectID() (string, error)
+	GetProject(v any) error
 }
 
 func (i *projectResolver) ProjectInfo(ctx context.Context) (ProjectInfor, bool) {
@@ -72,6 +73,16 @@ type invalidProjectInfor struct {
 	retrievedProjectId string
 }
 
-func (i invalidProjectInfor) GetProject() (any, error) {
-	return nil, sdinsureerrors.NewBadParamsError(fmt.Errorf("invalid id:%s", i.retrievedProjectId))
+func NewInvalidProjectInfor(pid string) invalidProjectInfor {
+	return invalidProjectInfor{
+		retrievedProjectId: pid,
+	}
+}
+
+func (i invalidProjectInfor) GetProjectID() (string, error) {
+	return "", sdinsureerrors.NewBadParamsError(fmt.Errorf("invalid id:%s", i.retrievedProjectId))
+}
+
+func (i invalidProjectInfor) GetProject(v any) error {
+	return sdinsureerrors.NewBadParamsError(fmt.Errorf("invalid id:%s", i.retrievedProjectId))
 }

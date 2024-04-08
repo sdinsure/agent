@@ -3,7 +3,7 @@ package runtime
 import (
 	"context"
 
-	"github.com/sdinsure/agent/pkg/grpc/server/runtime"
+	sdinsureruntime "github.com/sdinsure/agent/pkg/grpc/server/runtime"
 	"github.com/sdinsure/agent/pkg/logger"
 )
 
@@ -12,7 +12,7 @@ type UserResolver interface {
 	WithUserInfo(ctx context.Context) context.Context
 
 	// UserInfo retrieves userinfo from context
-	UserInfo(ctx context.Context) (UserInfor, error)
+	UserInfo(ctx context.Context) (UserInfor, bool)
 }
 
 type IdentityResolver struct {
@@ -25,7 +25,10 @@ type UserGetter interface {
 }
 
 var (
-	_           pkgruntime.UserResolver = &IdentityResolver{}
+	_ UserResolver = &IdentityResolver{}
+)
+
+type (
 	userInfoKey struct{}
 )
 
@@ -38,13 +41,13 @@ func NewIdentityResolver(log logger.Logger, userGetter UserGetter) *IdentityReso
 
 func (i *IdentityResolver) WithUserInfo(ctx context.Context) context.Context {
 	i.log.Infox(ctx, "identityresolver, with user info is called\n")
-	sub, hasSub := runtime.SubInfo(ctx)
+	sub, hasSub := sdinsureruntime.SubInfo(ctx)
 	if !hasSub {
 		return context.WithValue(ctx, userInfoKey{}, annonymous)
 	}
 	i.log.Infox(ctx, "identityresolver, sub:%+v\n", sub)
 
-	userInfo, err := i.userGetter(ctx, sub)
+	userInfo, err := i.userGetter.GetUser(ctx, sub)
 	if err != nil {
 		i.log.Errorx(ctx, "failed to retrieve userinfo, sub:%+v, err:%+v\n", sub, err)
 		return context.WithValue(ctx, userInfoKey{}, annonymous)
@@ -59,10 +62,10 @@ func (i *IdentityResolver) UserInfo(ctx context.Context) (UserInfor, bool) {
 	return infov, castable
 }
 
-type TypeUserId string
+type TypeUserID string
 
-func NewTypeUserId(s string) TypeUserId {
-	return TypeUserId(s)
+func NewTypeUserID(s string) TypeUserID {
+	return TypeUserID(s)
 }
 
 type TypeUserEmail string
@@ -82,7 +85,7 @@ var (
 )
 
 type UserInfor interface {
-	GetUserId() TypeUserId
+	GetUserId() TypeUserID
 	GetEmail() TypeUserEmail
 	GetGroups() TypeUserGroups
 }
@@ -107,7 +110,7 @@ func (u userInfo) GetGroups() TypeUserGroups {
 
 var (
 	annonymous = userInfo{
-		uid:    NewTypeUserId("annonymous"),
+		uid:    NewTypeUserID("annonymous"),
 		email:  NewTypeUserEmail("annonymous"),
 		groups: NewTypeUserGroups([]string{"annonymous"}),
 	}

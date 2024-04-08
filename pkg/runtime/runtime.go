@@ -11,7 +11,7 @@ type RequestIdentityResolver interface {
 	WithRequestID(context.Context) context.Context
 
 	// RequestID retrieves request id from context
-	RequestID(context.Context) (TypeRequestID, error)
+	RequestID(context.Context) (TypeRequestID, bool)
 }
 
 type (
