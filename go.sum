@@ -220,8 +220,8 @@ go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.25.0 h1:vOL89
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.25.0/go.mod h1:8GlBGcDk8KKi7n+2S4BT/CPZQYH3erLu0/k64r1MYgo=
 go.opentelemetry.io/otel/exporters/prometheus v0.47.0 h1:OL6yk1Z/pEGdDnrBbxSsH+t4FY1zXfBRGd7bjwhlMLU=
 go.opentelemetry.io/otel/exporters/prometheus v0.47.0/go.mod h1:xF3N4OSICZDVbbYZydz9MHFro1RjmkPUKEvar2utG+Q=
-go.opentelemetry.io/otel/exporters/stdout/stdoutmetric v1.24.0 h1:JYE2HM7pZbOt5Jhk8ndWZTUWYOVift2cHjXVMkPdmdc=
-go.opentelemetry.io/otel/exporters/stdout/stdoutmetric v1.24.0/go.mod h1:yMb/8c6hVsnma0RpsBMNo0fEiQKeclawtgaIaOp2MLY=
+go.opentelemetry.io/otel/exporters/stdout/stdoutmetric v1.25.0 h1:d7nHbdzU84STOiszaOxQ3kw5IwkSmHsU5Muol5/vL4I=
+go.opentelemetry.io/otel/exporters/stdout/stdoutmetric v1.25.0/go.mod h1:yiPA1iZbb/EHYnODXOxvtKuB0I2hV8ehfLTEWpl7BJU=
 go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.25.0 h1:0vZZdECYzhTt9MKQZ5qQ0V+J3MFu4MQaQ3COfugF+FQ=
 go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.25.0/go.mod h1:e7iXx3HjaSSBXfy9ykVUlupS2Vp7LBIBuT21ousM2Hk=
 go.opentelemetry.io/otel/metric v1.25.0 h1:LUKbS7ArpFL/I2jJHdJcqMGxkRdxpPHE0VU/D4NuEwA=
