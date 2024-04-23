@@ -19,6 +19,7 @@ import (
 	"github.com/spf13/viper"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
@@ -33,36 +34,8 @@ type HttpMiddlewareHandler func(h http.Handler) http.Handler
 type HTTPGatewayServerConfig struct {
 	middlewares  []HttpMiddlewareHandler
 	serveMuxOpts []pkgruntime.ServeMuxOption
-}
 
-func defaultHTTPGatewayServerConfig(log logger.Logger) HTTPGatewayServerConfig {
-	return HTTPGatewayServerConfig{
-		middlewares: []HttpMiddlewareHandler{
-			withLoggerWrapper(log),
-			cors,
-		},
-		serveMuxOpts: []pkgruntime.ServeMuxOption{
-			pkgruntime.WithRoutingErrorHandler(handleRoutingError),
-			pkgruntime.WithForwardResponseOption(responseHeaderMatcher),
-			pkgruntime.WithIncomingHeaderMatcher(customizedHttpIncomingHeaderMatcher),
-			pkgruntime.WithOutgoingHeaderMatcher(customizedHttpOutgoingHeaderMatcher),
-			pkgruntime.WithMetadata(func(ctx context.Context, r *http.Request) metadata.MD {
-				return runtime.ForwardHttpToMetadata(ctx, r)
-			}),
-		},
-	}
-}
-
-func chainMiddleware(h http.Handler, m ...HttpMiddlewareHandler) http.Handler {
-	if len(m) < 1 {
-		return h
-	}
-	wrapped := h
-	// loop in reverse to preserve middleware order
-	for i := len(m) - 1; i >= 0; i-- {
-		wrapped = m[i](wrapped)
-	}
-	return wrapped
+	transportCredentials credentials.TransportCredentials
 }
 
 type HTTPGatewayServerConfigOption func(c *HTTPGatewayServerConfig)
@@ -79,6 +52,12 @@ func WithServeMuxOption(serveMuxOpts ...pkgruntime.ServeMuxOption) HTTPGatewaySe
 	}
 }
 
+func WithTransportCredentials(tc credentials.TransportCredentials) HTTPGatewayServerConfigOption {
+	return func(c *HTTPGatewayServerConfig) {
+		c.transportCredentials = tc
+	}
+}
+
 func NewHTTPGatewayServer(g *grpcserver.GrpcServer, log logger.Logger, port int, optFuncs ...HTTPGatewayServerConfigOption) (*HTTPGatewayServer, error) {
 
 	defaultOpts := defaultHTTPGatewayServerConfig(log)
@@ -89,8 +68,7 @@ func NewHTTPGatewayServer(g *grpcserver.GrpcServer, log logger.Logger, port int,
 	opts := []grpc.DialOption{
 		//grpc.WithBlock(),
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(10 * 1024 * 1024 /*10M for max receive size*/)),
-		//grpc.WithTransportCredentials(credentials.NewClientTLSCredentials()),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(defaultOpts.transportCredentials),
 	}
 	addr, err := g.LocalAddr()
 	if err != nil {
@@ -116,6 +94,37 @@ func NewHTTPGatewayServer(g *grpcserver.GrpcServer, log logger.Logger, port int,
 		httpMux:    httpMux,
 		httpServer: &http.Server{Handler: httpMux},
 	}, nil
+}
+
+func defaultHTTPGatewayServerConfig(log logger.Logger) HTTPGatewayServerConfig {
+	return HTTPGatewayServerConfig{
+		middlewares: []HttpMiddlewareHandler{
+			withLoggerWrapper(log),
+			cors,
+		},
+		serveMuxOpts: []pkgruntime.ServeMuxOption{
+			pkgruntime.WithRoutingErrorHandler(handleRoutingError),
+			pkgruntime.WithForwardResponseOption(responseHeaderMatcher),
+			pkgruntime.WithIncomingHeaderMatcher(customizedHttpIncomingHeaderMatcher),
+			pkgruntime.WithOutgoingHeaderMatcher(customizedHttpOutgoingHeaderMatcher),
+			pkgruntime.WithMetadata(func(ctx context.Context, r *http.Request) metadata.MD {
+				return runtime.ForwardHttpToMetadata(ctx, r)
+			}),
+		},
+		transportCredentials: insecure.NewCredentials(),
+	}
+}
+
+func chainMiddleware(h http.Handler, m ...HttpMiddlewareHandler) http.Handler {
+	if len(m) < 1 {
+		return h
+	}
+	wrapped := h
+	// loop in reverse to preserve middleware order
+	for i := len(m) - 1; i >= 0; i-- {
+		wrapped = m[i](wrapped)
+	}
+	return wrapped
 }
 
 // handleRoutingError handles grpc.status code with http code
