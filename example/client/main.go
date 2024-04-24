@@ -8,6 +8,7 @@ import (
 
 	helloservicehttpclient "github.com/sdinsure/agent/example/api/go-http-client"
 	helloserviceclientstub "github.com/sdinsure/agent/example/api/go-openapiv2/client/hello_service"
+	sdinsurehttp "github.com/sdinsure/agent/pkg/http"
 	"github.com/sdinsure/agent/pkg/version"
 )
 
@@ -18,7 +19,7 @@ func main() {
 
 	version.Print()
 
-	clientService := helloservicehttpclient.MustNewClient(*serverAddr)
+	clientService := helloservicehttpclient.MustNewClient(*serverAddr, sdinsurehttp.NewHttpClient())
 
 	ticker := time.NewTicker(10 * time.Millisecond)
 	defer ticker.Stop()

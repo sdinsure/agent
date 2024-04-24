@@ -2,6 +2,7 @@ package authnmiddleware
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -99,6 +100,9 @@ func (a *AuthNMiddleware) AuthFunc(ctx context.Context) (context.Context, error)
 	} else if a.option.enabledAnnonymous {
 		// if no token found, check whether it is annonmyous
 		claims = annonymous{}
+	} else {
+		// no valid auth and non annonymous
+		return nil, sderrors.NewInvalidAuth(errors.New("auth: no valid auth and non-annonymous access"))
 	}
 
 	sub, _ := claims.GetSubject()

@@ -49,7 +49,7 @@ func (s skippedSubjects) apply(o *AuthZMiddlewareOptions) {
 	o.skippedSubjects = append(o.skippedSubjects, s.subjects...)
 }
 
-func WithSkippedSubjects(subjects []string) skippedSubjects {
+func WithSkippedSubjects(subjects ...string) skippedSubjects {
 	return skippedSubjects{subjects: subjects}
 }
 

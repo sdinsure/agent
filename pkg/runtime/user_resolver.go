@@ -43,14 +43,14 @@ func (i *IdentityResolver) WithUserInfo(ctx context.Context) context.Context {
 	i.log.Infox(ctx, "identityresolver, with user info is called\n")
 	sub, hasSub := sdinsureruntime.SubInfo(ctx)
 	if !hasSub {
-		return context.WithValue(ctx, userInfoKey{}, annonymous)
+		return context.WithValue(ctx, userInfoKey{}, Annonymous)
 	}
 	i.log.Infox(ctx, "identityresolver, sub:%+v\n", sub)
 
 	userInfo, err := i.userGetter.GetUser(ctx, sub)
 	if err != nil {
 		i.log.Errorx(ctx, "failed to retrieve userinfo, sub:%+v, err:%+v\n", sub, err)
-		return context.WithValue(ctx, userInfoKey{}, annonymous)
+		return context.WithValue(ctx, userInfoKey{}, Annonymous)
 	}
 	i.log.Infox(ctx, "identityresolver, userInfo:%+v\n", userInfo)
 	return context.WithValue(ctx, userInfoKey{}, userInfo)
@@ -109,7 +109,7 @@ func (u userInfo) GetGroups() TypeUserGroups {
 }
 
 var (
-	annonymous = userInfo{
+	Annonymous = userInfo{
 		uid:    NewTypeUserID("annonymous"),
 		email:  NewTypeUserEmail("annonymous"),
 		groups: NewTypeUserGroups([]string{"annonymous"}),
