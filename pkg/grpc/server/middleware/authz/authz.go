@@ -56,7 +56,7 @@ func WithSkippedSubjects(subjects []string) skippedSubjects {
 func newOptions(opts ...AuthZMiddlewareOptioner) *AuthZMiddlewareOptions {
 	o := &AuthZMiddlewareOptions{}
 	for _, opt := range opts {
-		opt(o)
+		opt.apply(o)
 	}
 	return o
 
@@ -67,8 +67,8 @@ type Enforcer interface {
 	Enforce(ctx context.Context, subject, object, action string) (bool, error)
 }
 
-func NewAuthZMiddleware(log logger.Logger, enforcer Enforcer, optFuncs ...AuthZMiddlewareOptionFunc) *AuthzMiddleware {
-	opt := newOptions(optFuncs...)
+func NewAuthZMiddleware(log logger.Logger, enforcer Enforcer, optioners ...AuthZMiddlewareOptioner) *AuthzMiddleware {
+	opt := newOptions(optioners...)
 	return &AuthzMiddleware{log: log, enforcer: enforcer, opt: opt}
 }
 
@@ -132,7 +132,7 @@ func (a *AuthzMiddleware) checkBypass(ctx context.Context, sub, httpPath, httpMe
 		for _, skippedAuthPath := range a.opt.skippedAuthPaths {
 			a.log.Infox(ctx, "authnmiddleware http path:%s, method:%s", httpPath, httpMethod)
 			a.log.Infox(ctx, "authnmiddleware skipped path:%+v", skippedAuthPath)
-			if a.opt.CaseSensitive {
+			if a.opt.caseSensitive {
 				if skippedAuthPath.RawPath == httpPath && strings.ToLower(skippedAuthPath.RawMethod) == strings.ToLower(httpMethod) {
 					a.log.Infox(ctx, "authmiddleware skipped")
 					return true, nil
