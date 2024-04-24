@@ -11,28 +11,29 @@ import (
 	"github.com/sdinsure/agent/pkg/logger"
 )
 
-type authZMiddlewareOptions interface {
+type AuthZMiddlewareOptioner interface {
 	apply(o *AuthZMiddlewareOptions)
 }
 
 type AuthZMiddlewareOptions struct {
-	SkippedAuthPaths []HttpPath
-	CaseSensitive    bool
+	skippedAuthPaths []HttpPath
+	caseSensitive    bool
+
+	skippedSubjects []string
 }
 
-type AuthZMiddlewareOptionFunc func(o *AuthZMiddlewareOptions)
-
-func (a AuthZMiddlewareOptionFunc) apply(o *AuthZMiddlewareOptions) {
-	a(o)
+type skippedAuthzPaths struct {
+	paths         []HttpPath
+	caseSensitive bool
 }
 
-func newOptions(opts ...AuthZMiddlewareOptionFunc) *AuthZMiddlewareOptions {
-	o := &AuthZMiddlewareOptions{}
-	for _, opt := range opts {
-		opt(o)
-	}
-	return o
+func (s skippedAuthzPaths) apply(o *AuthZMiddlewareOptions) {
+	o.skippedAuthPaths = append(o.skippedAuthPaths, s.paths...)
+	o.caseSensitive = s.caseSensitive
+}
 
+func WithSkippedAuthZPaths(paths []HttpPath, caseSensitive bool) AuthZMiddlewareOptioner {
+	return skippedAuthzPaths{paths: paths, caseSensitive: caseSensitive}
 }
 
 type HttpPath struct {
@@ -40,10 +41,25 @@ type HttpPath struct {
 	RawMethod string
 }
 
-func WithSkippedAuthZPaths(paths []HttpPath) AuthZMiddlewareOptionFunc {
-	return func(o *AuthZMiddlewareOptions) {
-		o.SkippedAuthPaths = paths
+type skippedSubjects struct {
+	subjects []string
+}
+
+func (s skippedSubjects) apply(o *AuthZMiddlewareOptions) {
+	o.skippedSubjects = append(o.skippedSubjects, s.subjects...)
+}
+
+func WithSkippedSubjects(subjects []string) skippedSubjects {
+	return skippedSubjects{subjects: subjects}
+}
+
+func newOptions(opts ...AuthZMiddlewareOptioner) *AuthZMiddlewareOptions {
+	o := &AuthZMiddlewareOptions{}
+	for _, opt := range opts {
+		opt(o)
 	}
+	return o
+
 }
 
 type Enforcer interface {
@@ -76,16 +92,16 @@ func (a *AuthzMiddleware) AuthFunc(ctx context.Context) (context.Context, error)
 	}
 	a.log.Info("authz: reuqested httpverb:%+v", httpVerb)
 
-	if canSkip, err := a.checkBypassMethodOrPath(ctx, httpPath, httpVerb); err != nil {
+	sub, found := runtime.SubInfo(ctx)
+	if !found {
+		return nil, sderrors.NewInvalidAuth(errors.New("invalid sub info"))
+	}
+
+	if canSkip, err := a.checkBypass(ctx, sub, httpPath, httpVerb); err != nil {
 		return ctx, err
 	} else if canSkip {
 		a.log.Infox(ctx, "authz: reuqest skipeed")
 		return ctx, nil
-	}
-
-	sub, found := runtime.SubInfo(ctx)
-	if !found {
-		return nil, sderrors.NewInvalidAuth(errors.New("invalid sub info"))
 	}
 	a.log.Info("authz: reuqested sub:%+v", sub)
 
@@ -100,9 +116,20 @@ func (a *AuthzMiddleware) AuthFunc(ctx context.Context) (context.Context, error)
 	return ctx, nil
 }
 
-func (a *AuthzMiddleware) checkBypassMethodOrPath(ctx context.Context, httpPath, httpMethod string) (bool, error) {
-	if a.opt != nil && len(a.opt.SkippedAuthPaths) > 0 {
-		for _, skippedAuthPath := range a.opt.SkippedAuthPaths {
+func (a *AuthzMiddleware) checkBypass(ctx context.Context, sub, httpPath, httpMethod string) (bool, error) {
+
+	if a.opt != nil && len(a.opt.skippedSubjects) > 0 {
+		a.log.Infox(ctx, "authnmiddleware check skipped sub, len:%d", len(a.opt.skippedSubjects))
+		for _, skippedSub := range a.opt.skippedSubjects {
+			if sub == skippedSub {
+				a.log.Infox(ctx, "authnmiddleware sub(%s) matched, skipped\n", sub)
+				return true, nil
+			}
+		}
+	}
+
+	if a.opt != nil && len(a.opt.skippedAuthPaths) > 0 {
+		for _, skippedAuthPath := range a.opt.skippedAuthPaths {
 			a.log.Infox(ctx, "authnmiddleware http path:%s, method:%s", httpPath, httpMethod)
 			a.log.Infox(ctx, "authnmiddleware skipped path:%+v", skippedAuthPath)
 			if a.opt.CaseSensitive {
