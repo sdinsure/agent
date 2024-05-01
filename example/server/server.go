@@ -14,7 +14,7 @@ func NewServerService(
 	log logger.Logger,
 ) (*ServerService, error) {
 
-	svr := grpcserver.NewGrpcServerWithInterceptors(log, nil, nil, nil)
+	svr := grpcserver.NewGrpcServer(grpcserver.WithLogger(log))
 	httpGateway, err := grpchttpgatewayserver.NewHTTPGatewayServer(svr, log, httpPort)
 	if err != nil {
 		return nil, err

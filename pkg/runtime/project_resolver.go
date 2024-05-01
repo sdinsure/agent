@@ -2,7 +2,8 @@ package runtime
 
 import (
 	"context"
-	"fmt"
+	"errors"
+	"regexp"
 
 	sdinsureerrors "github.com/sdinsure/agent/pkg/errors"
 	logger "github.com/sdinsure/agent/pkg/logger"
@@ -11,10 +12,15 @@ import (
 
 type ProjectResolver interface {
 	// WithProjectInfo set project information into context
-	WithProjectInfo(ctx context.Context, req interface{}) context.Context
+	WithProjectInfo(ctx context.Context, reqPath string) context.Context
 
 	// ProjectInfo retrieves project information from context
 	ProjectInfo(ctx context.Context) (ProjectInfor, bool)
+}
+
+type ProjectInfor interface {
+	GetProjectID() (string, error)
+	GetProject(v any) error
 }
 
 func NewProjectResolver(log logger.Logger, projectGetter ProjectGetter) *projectResolver {
@@ -33,26 +39,34 @@ type projectResolver struct {
 	projectGetter ProjectGetter
 }
 
-func (i *projectResolver) WithProjectInfo(ctx context.Context, req interface{}) context.Context {
-	i.log.Infox(ctx, "projectresolver, with project info is called\n")
-	projectId, found := reflection.GetStringValue(req, "ProjectId")
+func (i *projectResolver) WithProjectInfo(ctx context.Context, reqPath string) context.Context {
+	i.log.Infox(ctx, "projectresolver: reqpath=%+v\n", reqPath)
+	projectId, found := findProjectIdFromPath(reqPath)
 	if !found || len(projectId) == 0 {
-		i.log.Warnx(ctx, "projectresolver, project id not found\n")
-		return context.WithValue(ctx, projectInfoKey{}, invalidProjectInfor{projectId})
+		i.log.Warnx(ctx, "projectresolver: project id not found from request string\n")
+		return context.WithValue(ctx, projectInfoKey{}, invalidProjectInfor{})
 	}
-	i.log.Infox(ctx, "projectresolver, project Id:%+v\n", projectId)
+	i.log.Infox(ctx, "projectresolver: parsed project Id:%+v\n", projectId)
 	projectInfor, err := i.projectGetter.GetProject(ctx, projectId)
 	if err != nil {
-		i.log.Error("projectresolver: failed to lookup project from id:%s", projectId)
-		return context.WithValue(ctx, projectInfoKey{}, invalidProjectInfor{projectId})
+		i.log.Errorx(ctx, "projectresolver: failed to lookup project from id:%s, err:%+v", projectId, err)
+		return context.WithValue(ctx, projectInfoKey{}, invalidProjectInfor{})
 	}
-	i.log.Infox(ctx, "projectresolver, project inform:%+v\n", projectInfor)
+	i.log.Infox(ctx, "projectresolver, resolved project inform:%+v\n", projectInfor)
 	return context.WithValue(ctx, projectInfoKey{}, projectInfor)
 }
 
-type ProjectInfor interface {
-	GetProjectID() (string, error)
-	GetProject(v any) error
+func findProjectIdFromPath(path string) (string, bool) {
+	var re = regexp.MustCompile(`\/projects\/([a-zA-Z0-9]+)\/?`)
+	matchedStrings := re.FindAllStringSubmatch(path, -1)
+	if len(matchedStrings) != 1 || len(matchedStrings[0]) != 2 {
+		return "", false
+	}
+	return matchedStrings[0][1], true
+}
+
+func findProjectIdFromStruct(req interface{}) (string, bool) {
+	return reflection.GetStringValue(req, "ProjectId")
 }
 
 func (i *projectResolver) ProjectInfo(ctx context.Context) (ProjectInfor, bool) {
@@ -70,19 +84,16 @@ var (
 )
 
 type invalidProjectInfor struct {
-	retrievedProjectId string
 }
 
-func NewInvalidProjectInfor(pid string) invalidProjectInfor {
-	return invalidProjectInfor{
-		retrievedProjectId: pid,
-	}
+func NewInvalidProjectInfor() invalidProjectInfor {
+	return invalidProjectInfor{}
 }
 
 func (i invalidProjectInfor) GetProjectID() (string, error) {
-	return "", sdinsureerrors.NewBadParamsError(fmt.Errorf("invalid id:%s", i.retrievedProjectId))
+	return "", sdinsureerrors.NewBadParamsError(errors.New("invalid projectid"))
 }
 
 func (i invalidProjectInfor) GetProject(v any) error {
-	return sdinsureerrors.NewBadParamsError(fmt.Errorf("invalid id:%s", i.retrievedProjectId))
+	return sdinsureerrors.NewBadParamsError(errors.New("invalid projectid"))
 }

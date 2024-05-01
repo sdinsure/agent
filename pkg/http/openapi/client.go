@@ -1,22 +1,27 @@
 package openapi
 
 import (
+	"net/http"
 	"net/url"
 	"strings"
 
 	httptransport "github.com/go-openapi/runtime/client"
-	http "github.com/sdinsure/agent/pkg/http"
+	sdinsurehttp "github.com/sdinsure/agent/pkg/http"
 )
 
-func MustNew(endpoint string, basePath string) *httptransport.Runtime {
-	tr, err := New(endpoint, basePath)
+func MustNew(endpoint string, basePath string, client *http.Client) *httptransport.Runtime {
+	tr, err := New(endpoint, basePath, client)
 	if err != nil {
 		panic(err)
 	}
 	return tr
 }
 
-func New(endpoint string, basePath string) (*httptransport.Runtime, error) {
+func New(endpoint string, basePath string, client *http.Client) (*httptransport.Runtime, error) {
+	if client == nil {
+		client = sdinsurehttp.NewHttpClient()
+	}
+
 	defaultScheme := "http"
 	defaultHost := endpoint
 	if hasScheme(endpoint) {
@@ -34,7 +39,7 @@ func New(endpoint string, basePath string) (*httptransport.Runtime, error) {
 		defaultHost,
 		basePath,
 		[]string{defaultScheme},
-		http.NewHttpClient(),
+		client,
 	)
 	return httptransportclient, nil
 }

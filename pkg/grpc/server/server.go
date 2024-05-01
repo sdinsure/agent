@@ -20,29 +20,27 @@ import (
 
 var withReflection = flag.Bool("with_grpc_reflection", false, "turn on grpc reflection")
 
-type option struct {
-	grpcPort int
+type GrpcServerConfigurer interface {
+	apply(o *grpcServerConfig)
 }
 
-func newOption(optioners ...Optioner) *option {
-	o := &option{}
-
-	for _, optioner := range optioners {
-		optioner.apply(o)
-	}
-
-	return o
-}
-
-type Optioner interface {
-	apply(o *option)
+type grpcServerConfig struct {
+	grpcPort           int
+	serverOpts         []grpc.ServerOption
+	unaryInterceptors  []grpc.UnaryServerInterceptor
+	streamInterceptors []grpc.StreamServerInterceptor
+	logger             pkglogger.Logger
 }
 
 type withGrpcPort struct {
 	grpcPort int
 }
 
-func (w withGrpcPort) apply(o *option) {
+var (
+	_ GrpcServerConfigurer = withGrpcPort{}
+)
+
+func (w withGrpcPort) apply(o *grpcServerConfig) {
 	o.grpcPort = w.grpcPort
 }
 
@@ -50,18 +48,70 @@ func WithGrpcPort(p int) withGrpcPort {
 	return withGrpcPort{grpcPort: p}
 }
 
-func NewGrpcServer(logger pkglogger.Logger, optioners ...Optioner) *GrpcServer {
-	return NewGrpcServerWithInterceptors(logger, nil, nil, nil, optioners...)
+type interceptorConfigure struct {
+	unaryInterceptors  []grpc.UnaryServerInterceptor
+	streamInterceptors []grpc.StreamServerInterceptor
 }
 
-func NewGrpcServerWithInterceptors(
-	logger pkglogger.Logger,
-	serverOpts []grpc.ServerOption,
-	unaryInterceptors []grpc.UnaryServerInterceptor,
-	streamInterceptors []grpc.StreamServerInterceptor,
-	optioners ...Optioner,
-) *GrpcServer {
-	opt := newOption(optioners...)
+var (
+	_ GrpcServerConfigurer = interceptorConfigure{}
+)
+
+func (i interceptorConfigure) apply(o *grpcServerConfig) {
+	o.unaryInterceptors = i.unaryInterceptors
+	o.streamInterceptors = i.streamInterceptors
+}
+
+func WithInterceptor(unary []grpc.UnaryServerInterceptor, stream []grpc.StreamServerInterceptor) interceptorConfigure {
+	return interceptorConfigure{
+		unaryInterceptors:  unary,
+		streamInterceptors: stream,
+	}
+}
+
+type grpcServerOption struct {
+	serverOpts []grpc.ServerOption
+}
+
+var (
+	_ GrpcServerConfigurer = grpcServerOption{}
+)
+
+func (g grpcServerOption) apply(o *grpcServerConfig) {
+	o.serverOpts = g.serverOpts
+}
+
+func WithGrpcServerOption(serverOpts ...grpc.ServerOption) grpcServerOption {
+	return grpcServerOption{serverOpts: serverOpts}
+}
+
+type serverLogger struct {
+	logger pkglogger.Logger
+}
+
+var (
+	_ GrpcServerConfigurer = serverLogger{}
+)
+
+func (g serverLogger) apply(o *grpcServerConfig) {
+	o.logger = g.logger
+}
+
+func WithLogger(logger pkglogger.Logger) serverLogger {
+	return serverLogger{logger: logger}
+}
+
+func newConfig(cfgs ...GrpcServerConfigurer) *grpcServerConfig {
+	o := &grpcServerConfig{}
+
+	for _, cfg := range cfgs {
+		cfg.apply(o)
+	}
+	return o
+}
+
+func NewGrpcServer(cfgs ...GrpcServerConfigurer) *GrpcServer {
+	config := newConfig(cfgs...)
 
 	beforeMiddlewares := servermiddleware.MultiServerMiddleware(
 		[]servermiddleware.ServerMiddleware{
@@ -70,33 +120,32 @@ func NewGrpcServerWithInterceptors(
 		})
 	afterMiddlewares := servermiddleware.MultiServerMiddleware(
 		[]servermiddleware.ServerMiddleware{
-			loggermiddleware.NewLoggerMiddleware(logger),
+			loggermiddleware.NewLoggerMiddleware(config.logger),
 			recoverymiddleware.NewPanicRecoveryMiddleware(),
 		})
 	unaryInterceptorsSlice := appendMulti(
 		beforeMiddlewares.UnaryServerInterceptor(),
-		unaryInterceptors,
+		config.unaryInterceptors,
 		afterMiddlewares.UnaryServerInterceptor())
 	streamInterceptorsSlice := appendMulti(
 		beforeMiddlewares.StreamServerInterceptor(),
-		streamInterceptors,
+		config.streamInterceptors,
 		afterMiddlewares.StreamServerInterceptor())
-	var opts []grpc.ServerOption = []grpc.ServerOption{
+	var svrOpts []grpc.ServerOption = append(config.serverOpts,
 		grpc.ChainUnaryInterceptor(unaryInterceptorsSlice...),
 		grpc.ChainStreamInterceptor(streamInterceptorsSlice...),
 		grpc.StatsHandler(otelgrpc.NewServerHandler()),
-	}
-	opts = append(opts, serverOpts...)
-	grpcServer := grpc.NewServer(opts...)
+	)
+	grpcServer := grpc.NewServer(svrOpts...)
 
 	if *withReflection {
 		// Register reflection service on gRPC server.
 		reflection.Register(grpcServer)
 	}
 	return &GrpcServer{
-		logger: logger,
+		logger: config.logger,
 		Server: grpcServer,
-		opt:    opt,
+		config: config,
 	}
 }
 
@@ -109,7 +158,7 @@ func appendMulti[T any](slices ...[]T) []T {
 }
 
 type GrpcServer struct {
-	opt    *option
+	config *grpcServerConfig
 	logger pkglogger.Logger
 	*grpc.Server
 
@@ -119,7 +168,7 @@ type GrpcServer struct {
 
 func (g *GrpcServer) ListenAndServe() error {
 	var lc net.ListenConfig
-	grpcAddr := fmt.Sprintf(":%d", g.opt.grpcPort) // dial any port
+	grpcAddr := fmt.Sprintf(":%d", g.config.grpcPort) // dial any port
 	li, err := lc.Listen(context.Background(), "tcp", grpcAddr)
 	if err != nil {
 		return err
@@ -134,8 +183,8 @@ func (g *GrpcServer) LocalAddr() (string, error) {
 	var err error
 	if g.listenerAddr != nil {
 		addr = g.listenerAddr.String()
-	} else if g.opt.grpcPort > 0 {
-		addr = fmt.Sprintf("127.0.0.1:%d", g.opt.grpcPort)
+	} else if g.config.grpcPort > 0 {
+		addr = fmt.Sprintf("127.0.0.1:%d", g.config.grpcPort)
 	} else {
 		err = errors.New("localaddr is not ready")
 	}
