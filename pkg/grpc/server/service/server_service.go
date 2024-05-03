@@ -13,13 +13,23 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/proto"
 )
 
 type ServiceConfigure interface {
 	apply(*ServiceConfig)
 }
 
+// GrpcMetadataModifier can be used to pass http.Requests into grpc context via metadata.MD
 type GrpcMetadataModifier func(context.Context, *http.Request) metadata.MD
+
+// GrpcForwardResponseModifier would be used to modify http.ResponseWriter before the forward process is started
+type GrpcForwardResponseModifier func(context.Context, http.ResponseWriter, proto.Message) error
+
+type CustomizeMarshaler struct {
+	mime      string
+	marshaler runtime.Marshaler
+}
 
 type ServiceConfig struct {
 	// paired
@@ -31,7 +41,11 @@ type ServiceConfig struct {
 	clientTransportCredentials credentials.TransportCredentials
 
 	metadataModifiers []GrpcMetadataModifier
-	log               logger.Logger
+	forwardModifiers  []GrpcForwardResponseModifier
+
+	log logger.Logger
+
+	marshalers []CustomizeMarshaler
 }
 
 func newServiceConfig(scs ...ServiceConfigure) *ServiceConfig {
@@ -98,6 +112,39 @@ func WithMetadataModifier(md GrpcMetadataModifier) metadataModifierConfigure {
 	}
 }
 
+type forwardModifierConfigure struct {
+	modifier GrpcForwardResponseModifier
+}
+
+func (m forwardModifierConfigure) apply(sc *ServiceConfig) {
+	sc.forwardModifiers = append(sc.forwardModifiers, m.modifier)
+}
+
+func WithForwardModifier(md GrpcForwardResponseModifier) forwardModifierConfigure {
+	return forwardModifierConfigure{
+		modifier: md,
+	}
+}
+
+type marshalerOptionConfigure struct {
+	mime      string
+	marshaler runtime.Marshaler
+}
+
+func (m marshalerOptionConfigure) apply(sc *ServiceConfig) {
+	sc.marshalers = append(sc.marshalers, CustomizeMarshaler{
+		mime:      m.mime,
+		marshaler: m.marshaler,
+	})
+}
+
+func WithMarshaler(mime string, m runtime.Marshaler) marshalerOptionConfigure {
+	return marshalerOptionConfigure{
+		mime:      mime,
+		marshaler: m,
+	}
+}
+
 type loggerConfigure struct {
 	log logger.Logger
 }
@@ -128,6 +175,12 @@ func NewServerService(
 	var serveMuxOptions []runtime.ServeMuxOption
 	for _, metadataModifier := range config.metadataModifiers {
 		serveMuxOptions = append(serveMuxOptions, runtime.WithMetadata(metadataModifier))
+	}
+	for _, forwardModifier := range config.forwardModifiers {
+		serveMuxOptions = append(serveMuxOptions, runtime.WithForwardResponseOption(forwardModifier))
+	}
+	for _, customizedMarshaler := range config.marshalers {
+		serveMuxOptions = append(serveMuxOptions, runtime.WithMarshalerOption(customizedMarshaler.mime, customizedMarshaler.marshaler))
 	}
 
 	httpGateway, err := httpgateway.NewHTTPGatewayServer(
