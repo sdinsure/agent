@@ -31,44 +31,106 @@ import (
 
 type HttpMiddlewareHandler func(h http.Handler) http.Handler
 
+type HttpGatewayServerConfigurer interface {
+	apply(*HTTPGatewayServerConfig)
+}
+
 type HTTPGatewayServerConfig struct {
 	middlewares  []HttpMiddlewareHandler
 	serveMuxOpts []pkgruntime.ServeMuxOption
 
-	transportCredentials credentials.TransportCredentials
+	clientTransportCredentials credentials.TransportCredentials
+	log                        logger.Logger
+}
+
+func newConfig(log logger.Logger, configer ...HttpGatewayServerConfigurer) *HTTPGatewayServerConfig {
+	sc := &HTTPGatewayServerConfig{
+		log: log,
+		middlewares: []HttpMiddlewareHandler{
+			withLoggerWrapper(log),
+			cors,
+		},
+		serveMuxOpts: []pkgruntime.ServeMuxOption{
+			pkgruntime.WithRoutingErrorHandler(handleRoutingError),
+			pkgruntime.WithForwardResponseOption(responseHeaderMatcher),
+			pkgruntime.WithIncomingHeaderMatcher(buildinHttpIncomingHeaderMatcher),
+			pkgruntime.WithOutgoingHeaderMatcher(buildinHttpOutgoingHeaderMatcher),
+			pkgruntime.WithMetadata(func(ctx context.Context, r *http.Request) metadata.MD {
+				return runtime.ForwardHttpToMetadata(ctx, r)
+			}),
+		},
+		clientTransportCredentials: insecure.NewCredentials(),
+	}
+	for _, config := range configer {
+		config.apply(sc)
+	}
+	return sc
+}
+
+type withLog struct {
+	log logger.Logger
+}
+
+func (w withLog) apply(c *HTTPGatewayServerConfig) {
+	c.log = w.log
+}
+
+func WithLogger(log logger.Logger) withLog {
+	return withLog{log: log}
+}
+
+type httpMiddlewares struct {
+	middlewares []HttpMiddlewareHandler
+}
+
+func (h httpMiddlewares) apply(c *HTTPGatewayServerConfig) {
+	c.middlewares = append(c.middlewares, h.middlewares...)
 }
 
 type HTTPGatewayServerConfigOption func(c *HTTPGatewayServerConfig)
 
-func WithHttpMiddlewares(middlewares ...HttpMiddlewareHandler) HTTPGatewayServerConfigOption {
-	return func(c *HTTPGatewayServerConfig) {
-		c.middlewares = append(c.middlewares, middlewares...)
+func WithHttpMiddlewares(middlewares ...HttpMiddlewareHandler) httpMiddlewares {
+	return httpMiddlewares{
+		middlewares: middlewares,
 	}
 }
 
-func WithServeMuxOption(serveMuxOpts ...pkgruntime.ServeMuxOption) HTTPGatewayServerConfigOption {
-	return func(c *HTTPGatewayServerConfig) {
-		c.serveMuxOpts = append(c.serveMuxOpts, serveMuxOpts...)
+type serveMuxOption struct {
+	serveMuxOpts []pkgruntime.ServeMuxOption
+}
+
+func (s serveMuxOption) apply(c *HTTPGatewayServerConfig) {
+	c.serveMuxOpts = append(c.serveMuxOpts, s.serveMuxOpts...)
+}
+
+func WithServeMuxOption(serveMuxOpts ...pkgruntime.ServeMuxOption) serveMuxOption {
+	return serveMuxOption{
+		serveMuxOpts: serveMuxOpts,
 	}
 }
 
-func WithTransportCredentials(tc credentials.TransportCredentials) HTTPGatewayServerConfigOption {
-	return func(c *HTTPGatewayServerConfig) {
-		c.transportCredentials = tc
+type clientTransportCredentials struct {
+	clientTransportCredentials credentials.TransportCredentials
+}
+
+func (cc clientTransportCredentials) apply(c *HTTPGatewayServerConfig) {
+	c.clientTransportCredentials = cc.clientTransportCredentials
+}
+
+func WithTransportCredentials(tc credentials.TransportCredentials) clientTransportCredentials {
+	return clientTransportCredentials{
+		clientTransportCredentials: tc,
 	}
 }
 
-func NewHTTPGatewayServer(g *grpcserver.GrpcServer, log logger.Logger, port int, optFuncs ...HTTPGatewayServerConfigOption) (*HTTPGatewayServer, error) {
+func NewHTTPGatewayServer(g *grpcserver.GrpcServer, log logger.Logger, port int, configurers ...HttpGatewayServerConfigurer) (*HTTPGatewayServer, error) {
 
-	defaultOpts := defaultHTTPGatewayServerConfig(log)
-	for _, optFunc := range optFuncs {
-		optFunc(&defaultOpts)
-	}
+	sc := newConfig(log, configurers...)
 
 	opts := []grpc.DialOption{
 		//grpc.WithBlock(),
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(10 * 1024 * 1024 /*10M for max receive size*/)),
-		grpc.WithTransportCredentials(defaultOpts.transportCredentials),
+		grpc.WithTransportCredentials(sc.clientTransportCredentials),
 	}
 	addr, err := g.LocalAddr()
 	if err != nil {
@@ -79,10 +141,10 @@ func NewHTTPGatewayServer(g *grpcserver.GrpcServer, log logger.Logger, port int,
 		return nil, err
 	}
 
-	serveMux := pkgruntime.NewServeMux(defaultOpts.serveMuxOpts...)
+	serveMux := pkgruntime.NewServeMux(sc.serveMuxOpts...)
 	httpMux := http.NewServeMux()
 	// register all routes under root
-	httpMux.Handle("/", otelhttp.NewHandler(http.HandlerFunc(chainMiddleware(serveMux, defaultOpts.middlewares...).ServeHTTP), "otelhandler"))
+	httpMux.Handle("/", otelhttp.NewHandler(http.HandlerFunc(chainMiddleware(serveMux, sc.middlewares...).ServeHTTP), "otelhandler"))
 
 	return &HTTPGatewayServer{
 		log:        log,
@@ -94,25 +156,6 @@ func NewHTTPGatewayServer(g *grpcserver.GrpcServer, log logger.Logger, port int,
 		httpMux:    httpMux,
 		httpServer: &http.Server{Handler: httpMux},
 	}, nil
-}
-
-func defaultHTTPGatewayServerConfig(log logger.Logger) HTTPGatewayServerConfig {
-	return HTTPGatewayServerConfig{
-		middlewares: []HttpMiddlewareHandler{
-			withLoggerWrapper(log),
-			cors,
-		},
-		serveMuxOpts: []pkgruntime.ServeMuxOption{
-			pkgruntime.WithRoutingErrorHandler(handleRoutingError),
-			pkgruntime.WithForwardResponseOption(responseHeaderMatcher),
-			pkgruntime.WithIncomingHeaderMatcher(customizedHttpIncomingHeaderMatcher),
-			pkgruntime.WithOutgoingHeaderMatcher(customizedHttpOutgoingHeaderMatcher),
-			pkgruntime.WithMetadata(func(ctx context.Context, r *http.Request) metadata.MD {
-				return runtime.ForwardHttpToMetadata(ctx, r)
-			}),
-		},
-		transportCredentials: insecure.NewCredentials(),
-	}
 }
 
 func chainMiddleware(h http.Handler, m ...HttpMiddlewareHandler) http.Handler {
@@ -143,13 +186,13 @@ func responseHeaderMatcher(ctx context.Context, w http.ResponseWriter, resp prot
 	return nil
 }
 
-// customizedHttpIncomingHeaderMatcher converts incoming http readers to grpc metadata
-func customizedHttpIncomingHeaderMatcher(header string) (string, bool) {
+// buildinHttpIncomingHeaderMatcher converts incoming http readers to grpc metadata
+func buildinHttpIncomingHeaderMatcher(header string) (string, bool) {
 	return pkgruntime.DefaultHeaderMatcher(header)
 }
 
-// customizedHttpOutgoingHeaderMatcher converts grpc metadata to http header
-func customizedHttpOutgoingHeaderMatcher(header string) (string, bool) {
+// buildinHttpOutgoingHeaderMatcher allows headers from grpc to http header
+func buildinHttpOutgoingHeaderMatcher(header string) (string, bool) {
 	var (
 		allowedHeaders = map[string]struct{}{
 			"x-request-id": {},
