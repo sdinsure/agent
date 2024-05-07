@@ -59,7 +59,7 @@ type ServiceConfig struct {
 
 	marshalers []CustomizeMarshaler
 
-	maxRecvSize int
+	maxRecvMsgSize int
 }
 
 func newServiceConfig(scs ...ServiceConfigure) *ServiceConfig {
@@ -214,7 +214,7 @@ func (m maxRecvMsgSize) apply(sc *ServiceConfig) {
 	sc.maxRecvMsgSize = m.maxRecvMsgSize
 }
 
-func WithMaxRecvMsgSize(size int) outgoingHeaderMatcher {
+func WithMaxRecvMsgSize(size int) maxRecvMsgSize {
 	return maxRecvMsgSize{
 		maxRecvMsgSize: size,
 	}

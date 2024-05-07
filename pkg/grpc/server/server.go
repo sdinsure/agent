@@ -80,7 +80,6 @@ var (
 func (g grpcServerOption) apply(o *grpcServerConfig) {
 	o.serverOpts = g.serverOpts
 }
-grpc.MaxRecvMsgSizeCallOption
 
 func WithGrpcServerOption(serverOpts ...grpc.ServerOption) grpcServerOption {
 	return grpcServerOption{serverOpts: serverOpts}
