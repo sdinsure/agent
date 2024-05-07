@@ -26,6 +26,12 @@ type GrpcMetadataModifier func(context.Context, *http.Request) metadata.MD
 // GrpcForwardResponseModifier would be used to modify http.ResponseWriter before the forward process is started
 type GrpcForwardResponseModifier func(context.Context, http.ResponseWriter, proto.Message) error
 
+// IncomingHeaderMatcher is used to convert grpc.header to http.header with whitelisted
+type IncomingHeaderMatcher runtime.HeaderMatcherFunc
+
+// OutgoingHeaderMatcher is used to convert http.header to grpc.metadata with whitelisted
+type OutgoingHeaderMatcher runtime.HeaderMatcherFunc
+
 type CustomizeMarshaler struct {
 	mime      string
 	marshaler runtime.Marshaler
@@ -43,6 +49,12 @@ type ServiceConfig struct {
 	metadataModifiers []GrpcMetadataModifier
 	forwardModifiers  []GrpcForwardResponseModifier
 
+	// incoming
+	incomingHeaderMatchFunc IncomingHeaderMatcher
+
+	// outgoing
+	outgoingHeaderMatchFunc OutgoingHeaderMatcher
+
 	log logger.Logger
 
 	marshalers []CustomizeMarshaler
@@ -56,12 +68,18 @@ func newServiceConfig(scs ...ServiceConfigure) *ServiceConfig {
 		metadataModifiers: []GrpcMetadataModifier{
 			GrpcMetadataModifier(grpcmetadata.HttpCookiesToGrpcMetadata),
 		},
-		log: logger.NewLogger(),
+		log:                     logger.NewLogger(),
+		incomingHeaderMatchFunc: runtime.DefaultHeaderMatcher,
+		outgoingHeaderMatchFunc: deniedAll,
 	}
 	for _, sc := range scs {
 		sc.apply(c)
 	}
 	return c
+}
+
+func deniedAll(headerString string) (string, bool) {
+	return headerString, false
 }
 
 type middlewareConfigure struct {
@@ -157,6 +175,34 @@ func WithLogger(log logger.Logger) loggerConfigure {
 	return loggerConfigure{log: log}
 }
 
+type incomingHeaderMatcher struct {
+	fn IncomingHeaderMatcher
+}
+
+func (g incomingHeaderMatcher) apply(sc *ServiceConfig) {
+	sc.incomingHeaderMatchFunc = g.fn
+}
+
+func WithIncomingHeaderMatcher(fn IncomingHeaderMatcher) incomingHeaderMatcher {
+	return incomingHeaderMatcher{
+		fn: fn,
+	}
+}
+
+type outgoingHeaderMatcher struct {
+	fn OutgoingHeaderMatcher
+}
+
+func (g outgoingHeaderMatcher) apply(sc *ServiceConfig) {
+	sc.outgoingHeaderMatchFunc = g.fn
+}
+
+func WithOutgoingHeaderMatcher(fn OutgoingHeaderMatcher) outgoingHeaderMatcher {
+	return outgoingHeaderMatcher{
+		fn: fn,
+	}
+}
+
 func NewServerService(
 	grpcPort int,
 	httpPort int,
@@ -182,6 +228,10 @@ func NewServerService(
 	for _, customizedMarshaler := range config.marshalers {
 		serveMuxOptions = append(serveMuxOptions, runtime.WithMarshalerOption(customizedMarshaler.mime, customizedMarshaler.marshaler))
 	}
+	serveMuxOptions = append(serveMuxOptions,
+		runtime.WithIncomingHeaderMatcher(runtime.HeaderMatcherFunc(config.incomingHeaderMatchFunc)),
+		runtime.WithOutgoingHeaderMatcher(runtime.HeaderMatcherFunc(config.outgoingHeaderMatchFunc)),
+	)
 
 	httpGateway, err := httpgateway.NewHTTPGatewayServer(
 		svr,
