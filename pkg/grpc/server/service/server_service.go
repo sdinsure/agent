@@ -58,6 +58,8 @@ type ServiceConfig struct {
 	log logger.Logger
 
 	marshalers []CustomizeMarshaler
+
+	maxRecvSize int
 }
 
 func newServiceConfig(scs ...ServiceConfigure) *ServiceConfig {
@@ -71,6 +73,7 @@ func newServiceConfig(scs ...ServiceConfigure) *ServiceConfig {
 		log:                     logger.NewLogger(),
 		incomingHeaderMatchFunc: runtime.DefaultHeaderMatcher,
 		outgoingHeaderMatchFunc: deniedAll,
+		maxRecvMsgSize:          64 * 1024 * 1024, /*64M*/
 	}
 	for _, sc := range scs {
 		sc.apply(c)
@@ -203,6 +206,20 @@ func WithOutgoingHeaderMatcher(fn OutgoingHeaderMatcher) outgoingHeaderMatcher {
 	}
 }
 
+type maxRecvMsgSize struct {
+	maxRecvMsgSize int
+}
+
+func (m maxRecvMsgSize) apply(sc *ServiceConfig) {
+	sc.maxRecvMsgSize = m.maxRecvMsgSize
+}
+
+func WithMaxRecvMsgSize(size int) outgoingHeaderMatcher {
+	return maxRecvMsgSize{
+		maxRecvMsgSize: size,
+	}
+}
+
 func NewServerService(
 	grpcPort int,
 	httpPort int,
@@ -214,7 +231,10 @@ func NewServerService(
 	svr := grpcserver.NewGrpcServer(
 		grpcserver.WithLogger(config.log),
 		grpcserver.WithInterceptor(config.unaryMiddlewares, config.streamMiddlewares),
-		grpcserver.WithGrpcServerOption(grpc.Creds(config.serverTransportCredentials)),
+		grpcserver.WithGrpcServerOption(
+			grpc.MaxRecvMsgSize(config.maxRecvMsgSize),
+			grpc.Creds(config.serverTransportCredentials),
+		),
 		grpcserver.WithGrpcPort(grpcPort),
 	)
 
