@@ -2,8 +2,8 @@ cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMT
 cloud.google.com/go/compute/metadata v0.3.0 h1:Tz+eQXMEqDIKRsmY3cHTL6FVaynIjX2QxYC4trgAKZc=
 cloud.google.com/go/compute/metadata v0.3.0/go.mod h1:zFmK7XCadkQkj6TtorcaGlCW1hT1fIilQDwofLpJ20k=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.22.0 h1:PWcDbDjrcT/ZHLn4Bc/FuglaZZVPP8bWO/YRmJBbe38=
-github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.22.0/go.mod h1:XEK/YHYsi+Wk2Bk1+zi/he+gjRfDWtoIZEZwuwcYjhk=
+github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.23.0 h1:yRhWveg9NbJcJYoJL4FoSauT2dxnt4N9MIAJ7tvU/mQ=
+github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.23.0/go.mod h1:p2puVVSKjQ84Qb1gzw2XHLs34WQyHTYFZLaVxypAFYs=
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 h1:DklsrG3dyBCFEj5IhUbnKptjxatkF07cF2ak3yi77so=
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2/go.mod h1:WaHUgvxTVq04UNunO+XhnAqY/wQc+bxr74GqbsZ/Jqw=
 github.com/aws/aws-sdk-go v1.53.6 h1:1/MYh/VmxdJu7v2bwvDA2JS30UI7bg62QYgQ7KxMa/Q=
@@ -200,8 +200,8 @@ go.opentelemetry.io/contrib/detectors/aws/ec2 v1.27.0 h1:2oXgMydpWzhOqyJ/0BTZ8zo
 go.opentelemetry.io/contrib/detectors/aws/ec2 v1.27.0/go.mod h1:KVHXHGz/4WiLy0UhQen6Wzd4KhSrau3C3kSsGLb3Yk4=
 go.opentelemetry.io/contrib/detectors/aws/ecs v1.27.0 h1:3VwT2JwYqorDQZS5CGnKD5OAQ6iTlD7kgDZV9vUXR9o=
 go.opentelemetry.io/contrib/detectors/aws/ecs v1.27.0/go.mod h1:uqNiuQtZU5YjW2mu58xptApZaxxDJefKrSd+QaAMoWw=
-go.opentelemetry.io/contrib/detectors/gcp v1.26.0 h1:NeL09fPJQ4C350Q4TAoBCfLMeUmwbsRdrWAIQhPLKtA=
-go.opentelemetry.io/contrib/detectors/gcp v1.26.0/go.mod h1:F5oCMdHOftNwFDC0lUS+c5q6tvyb8C/hwdL9yP+AkXk=
+go.opentelemetry.io/contrib/detectors/gcp v1.27.0 h1:eVfDeFAPnMFZUhNdDZ/BbpEmC7/xxDKTSba5NhJH88s=
+go.opentelemetry.io/contrib/detectors/gcp v1.27.0/go.mod h1:amd+4uZxqJAUx7zI1JvygUtAc2EVWtQeyz8D+3161SQ=
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.52.0 h1:vS1Ao/R55RNV4O7TA2Qopok8yN+X0LIP6RVWLFkprck=
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.52.0/go.mod h1:BMsdeOxN04K0L5FNUBfjFdvwWGNe/rkmSwH4Aelu/X0=
 go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace v0.52.0 h1:Ud1trPqDHGSxyMiJ9a2XAdtTCXmRy0Yf7MjhW4dXogI=
