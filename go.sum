@@ -11,8 +11,8 @@ github.com/aws/aws-sdk-go v1.53.6/go.mod h1:LF8svs817+Nz+DmiMQKTO3ubZ/6IaTpq3Tju
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
-github.com/brunoscheufler/aws-ecs-metadata-go v0.0.0-20220812150832-b6b31c6eeeaf h1:WCnJxXZXx9c8gwz598wvdqmu+YTzB9wx2X1OovK3Le8=
-github.com/brunoscheufler/aws-ecs-metadata-go v0.0.0-20220812150832-b6b31c6eeeaf/go.mod h1:CeKhh8xSs3WZAc50xABMxu+FlfAAd5PNumo7NfOv7EE=
+github.com/brunoscheufler/aws-ecs-metadata-go v0.0.0-20221221133751-67e37ae746cd h1:C0dfBzAdNMqxokqWUysk2KTJSMmqvh9cNW1opdy5+0Q=
+github.com/brunoscheufler/aws-ecs-metadata-go v0.0.0-20221221133751-67e37ae746cd/go.mod h1:CeKhh8xSs3WZAc50xABMxu+FlfAAd5PNumo7NfOv7EE=
 github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=
 github.com/cenkalti/backoff/v4 v4.3.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
@@ -198,8 +198,8 @@ go.mongodb.org/mongo-driver v1.14.0 h1:P98w8egYRjYe3XDjxhYJagTokP/H6HzlsnojRgZRd
 go.mongodb.org/mongo-driver v1.14.0/go.mod h1:Vzb0Mk/pa7e6cWw85R4F/endUC3u0U9jGcNU603k65c=
 go.opentelemetry.io/contrib/detectors/aws/ec2 v1.27.0 h1:2oXgMydpWzhOqyJ/0BTZ8zo8jF9+/krTYuXzwSMsAsE=
 go.opentelemetry.io/contrib/detectors/aws/ec2 v1.27.0/go.mod h1:KVHXHGz/4WiLy0UhQen6Wzd4KhSrau3C3kSsGLb3Yk4=
-go.opentelemetry.io/contrib/detectors/aws/ecs v1.26.0 h1:G1q2oJFtGXaEaIwUnTTPkdxsuxCbPP7LEPd3o9jzZuM=
-go.opentelemetry.io/contrib/detectors/aws/ecs v1.26.0/go.mod h1:ewSOsyF/obj3CzT7iXE0rv5IfzpHdBwK/b1eRsuTeyU=
+go.opentelemetry.io/contrib/detectors/aws/ecs v1.27.0 h1:3VwT2JwYqorDQZS5CGnKD5OAQ6iTlD7kgDZV9vUXR9o=
+go.opentelemetry.io/contrib/detectors/aws/ecs v1.27.0/go.mod h1:uqNiuQtZU5YjW2mu58xptApZaxxDJefKrSd+QaAMoWw=
 go.opentelemetry.io/contrib/detectors/gcp v1.26.0 h1:NeL09fPJQ4C350Q4TAoBCfLMeUmwbsRdrWAIQhPLKtA=
 go.opentelemetry.io/contrib/detectors/gcp v1.26.0/go.mod h1:F5oCMdHOftNwFDC0lUS+c5q6tvyb8C/hwdL9yP+AkXk=
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.52.0 h1:vS1Ao/R55RNV4O7TA2Qopok8yN+X0LIP6RVWLFkprck=
