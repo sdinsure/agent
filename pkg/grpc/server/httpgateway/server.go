@@ -41,9 +41,13 @@ type HTTPGatewayServerConfig struct {
 
 	clientTransportCredentials credentials.TransportCredentials
 	log                        logger.Logger
+
+	maxCallRecvMsgSize int
 }
 
 func newConfig(log logger.Logger, configer ...HttpGatewayServerConfigurer) *HTTPGatewayServerConfig {
+
+	// default server config
 	sc := &HTTPGatewayServerConfig{
 		log: log,
 		middlewares: []HttpMiddlewareHandler{
@@ -60,6 +64,7 @@ func newConfig(log logger.Logger, configer ...HttpGatewayServerConfigurer) *HTTP
 			}),
 		},
 		clientTransportCredentials: insecure.NewCredentials(),
+		maxCallRecvMsgSize:         10 * 1024 * 1024, /*10M for max receive size*/
 	}
 	for _, config := range configer {
 		config.apply(sc)
@@ -123,13 +128,27 @@ func WithTransportCredentials(tc credentials.TransportCredentials) clientTranspo
 	}
 }
 
+type maxCallRecvMsgSize struct {
+	maxCallRecvMsgSize int
+}
+
+func (m maxCallRecvMsgSize) apply(c *HTTPGatewayServerConfig) {
+	c.maxCallRecvMsgSize = m.maxCallRecvMsgSize
+}
+
+func WithMaxCallRecvMsgSize(msgSize int) maxCallRecvMsgSize {
+	return maxCallRecvMsgSize{
+		maxCallRecvMsgSize: msgSize,
+	}
+}
+
 func NewHTTPGatewayServer(g *grpcserver.GrpcServer, log logger.Logger, port int, configurers ...HttpGatewayServerConfigurer) (*HTTPGatewayServer, error) {
 
 	sc := newConfig(log, configurers...)
 
 	opts := []grpc.DialOption{
 		//grpc.WithBlock(),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(10 * 1024 * 1024 /*10M for max receive size*/)),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(sc.maxCallRecvMsgSize)),
 		grpc.WithTransportCredentials(sc.clientTransportCredentials),
 	}
 	addr, err := g.LocalAddr()

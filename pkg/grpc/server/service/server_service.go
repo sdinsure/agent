@@ -214,6 +214,9 @@ func (m maxRecvMsgSize) apply(sc *ServiceConfig) {
 	sc.maxRecvMsgSize = m.maxRecvMsgSize
 }
 
+// WithMaxRecvMsgSize allows server to received this such size
+// while allows client to be able to receive this such as well.
+// NOTE: there is no limit during send operation in both server/client
 func WithMaxRecvMsgSize(size int) maxRecvMsgSize {
 	return maxRecvMsgSize{
 		maxRecvMsgSize: size,
@@ -257,6 +260,7 @@ func NewServerService(
 		svr,
 		config.log,
 		httpPort,
+		httpgateway.WithMaxCallRecvMsgSize(config.maxRecvMsgSize),
 		httpgateway.WithTransportCredentials(config.clientTransportCredentials),
 		httpgateway.WithServeMuxOption(serveMuxOptions...),
 	)
