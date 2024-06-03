@@ -17,7 +17,7 @@ require (
 	github.com/jackc/pgconn v1.14.3
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
 	github.com/prometheus/client_golang v1.19.1
-	github.com/spf13/viper v1.18.2
+	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
 	github.com/zeromicro/go-zero v1.6.5
 	go.opentelemetry.io/contrib/detectors/aws/ec2 v1.27.0
