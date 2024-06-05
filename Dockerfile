@@ -1,6 +1,6 @@
 ARG BASE_TAG=latest
 
-FROM golang:1.22.3-alpine3.19 AS build
+FROM golang:1.22.4-alpine3.19 AS build
 
 RUN apk add --no-cache make git coreutils
 
