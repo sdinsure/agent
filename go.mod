@@ -16,10 +16,10 @@ require (
 	github.com/hashicorp/go-version v1.7.0
 	github.com/jackc/pgconn v1.14.3
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
-	github.com/prometheus/client_golang v1.20.1
+	github.com/prometheus/client_golang v1.20.2
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
-	github.com/zeromicro/go-zero v1.7.0
+	github.com/zeromicro/go-zero v1.7.1
 	go.opentelemetry.io/contrib/detectors/aws/ec2 v1.28.0
 	go.opentelemetry.io/contrib/detectors/aws/ecs v1.28.0
 	go.opentelemetry.io/contrib/detectors/gcp v1.28.0
@@ -97,7 +97,7 @@ require (
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	go.mongodb.org/mongo-driver v1.16.0 // indirect
+	go.mongodb.org/mongo-driver v1.16.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.29.0 // indirect
 	go.opentelemetry.io/otel/trace v1.29.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
