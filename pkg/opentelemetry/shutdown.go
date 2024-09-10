@@ -2,8 +2,7 @@ package otel
 
 import (
 	"context"
-
-	"go.uber.org/multierr"
+	"errors"
 )
 
 type CanShutdown interface {
@@ -15,5 +14,5 @@ func ShutdownAll(ctx context.Context, canShutdownServices ...CanShutdown) error 
 	for index, canShutdownService := range canShutdownServices {
 		errSlice[index] = canShutdownService.Shutdown(ctx)
 	}
-	return multierr.Combine(errSlice...)
+	return errors.Join(errSlice...)
 }
