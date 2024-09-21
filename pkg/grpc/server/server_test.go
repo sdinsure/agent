@@ -13,7 +13,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	svr := NewGrpcServer(WithLogger(logger.NewLogger()))
+	svr := NewGrpcServer(WithLogger(logger.NewLogger(true)))
 	defer func() {
 		svr.GracefulStop()
 	}()
@@ -41,7 +41,7 @@ func TestServer(t *testing.T) {
 }
 
 func TestServer44138(t *testing.T) {
-	svr := NewGrpcServer(WithLogger(logger.NewLogger()), WithGrpcPort(44138))
+	svr := NewGrpcServer(WithLogger(logger.NewLogger(true)), WithGrpcPort(44138))
 	defer func() {
 		svr.GracefulStop()
 	}()
