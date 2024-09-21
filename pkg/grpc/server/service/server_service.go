@@ -38,6 +38,8 @@ type CustomizeMarshaler struct {
 }
 
 type ServiceConfig struct {
+	logVerbose bool
+
 	// paired
 	unaryMiddlewares  []grpc.UnaryServerInterceptor
 	streamMiddlewares []grpc.StreamServerInterceptor
@@ -64,13 +66,13 @@ type ServiceConfig struct {
 
 func newServiceConfig(scs ...ServiceConfigure) *ServiceConfig {
 	c := &ServiceConfig{
+		logVerbose:                 false,
 		serverTransportCredentials: insecure.NewCredentials(), // insecure
 		clientTransportCredentials: insecure.NewCredentials(), // insecure
 
 		metadataModifiers: []GrpcMetadataModifier{
 			GrpcMetadataModifier(grpcmetadata.HttpCookiesToGrpcMetadata),
 		},
-		log:                     logger.NewLogger(),
 		incomingHeaderMatchFunc: runtime.DefaultHeaderMatcher,
 		outgoingHeaderMatchFunc: deniedAll,
 		maxRecvMsgSize:          64 * 1024 * 1024, /*64M*/
@@ -78,11 +80,26 @@ func newServiceConfig(scs ...ServiceConfigure) *ServiceConfig {
 	for _, sc := range scs {
 		sc.apply(c)
 	}
+	if c.log == logger.Logger(nil) {
+		c.log = logger.NewLogger(c.logVerbose)
+	}
 	return c
 }
 
 func deniedAll(headerString string) (string, bool) {
 	return headerString, false
+}
+
+type logVerboseConfigure struct {
+	verbose bool
+}
+
+func (l *logVerboseConfigure) apply(sc *ServiceConfig) {
+	sc.logVerbose = l.verbose
+}
+
+func WithLogVerbose(v bool) *logVerboseConfigure {
+	return &logVerboseConfigure{verbose: v}
 }
 
 type middlewareConfigure struct {

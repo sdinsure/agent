@@ -30,7 +30,7 @@ func TestStorage(t *testing.T) {
 	//
 	// or run ./run_postgre.sh
 
-	postgrescli, err := storagetestutils.NewTestPostgresCli(logger.NewLogger())
+	postgrescli, err := storagetestutils.NewTestPostgresCli(logger.NewLogger(true))
 	assert.NoError(t, err)
 	tcrud := &testCRUD{postgrescli}
 	assert.Nil(t, tcrud.AutoMigrate())

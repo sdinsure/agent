@@ -27,6 +27,10 @@ func (l *loggerImpl) Flush() error {
 	return l.Logger.Sync()
 }
 
+func (l *loggerImpl) Debug(fmtStr string, values ...interface{}) {
+	l.Logger.Debug(fmt.Sprintf(fmtStr, values...))
+}
+
 func (l *loggerImpl) Info(fmtStr string, values ...interface{}) {
 	l.Logger.Info(fmt.Sprintf(fmtStr, values...))
 }
@@ -51,6 +55,10 @@ func (l *loggerImpl) attachCtx(ctx context.Context) *loggerImpl {
 		fields = append(fields, zap.Any(k, v))
 	}
 	return &loggerImpl{Logger: l.Logger.With(fields...)}
+}
+
+func (l *loggerImpl) Debugx(ctx context.Context, fmtStr string, values ...interface{}) {
+	l.attachCtx(ctx).Debug(fmtStr, values...)
 }
 
 func (l *loggerImpl) Infox(ctx context.Context, fmtStr string, values ...interface{}) {
@@ -85,13 +93,20 @@ func NewLogName(tag LogTag) string {
 	return name
 }
 
-func NewLogger() *loggerImpl {
+func NewLogger(verbose bool) *loggerImpl {
 	encConfig := zap.NewProductionEncoderConfig()
 	encConfig.EncodeTime = zapcore.TimeEncoderOfLayout(time.RFC3339)
 
-	infoLevel := zap.LevelEnablerFunc(func(level zapcore.Level) bool {
-		return level == zapcore.InfoLevel
-	})
+	var defaultLevelEnabler zap.LevelEnablerFunc
+	if verbose {
+		defaultLevelEnabler = zap.LevelEnablerFunc(func(level zapcore.Level) bool {
+			return level >= zapcore.DebugLevel
+		})
+	} else {
+		defaultLevelEnabler = zap.LevelEnablerFunc(func(level zapcore.Level) bool {
+			return level >= zapcore.InfoLevel
+		})
+	}
 	errorFatalLevel := zap.LevelEnablerFunc(func(level zapcore.Level) bool {
 		return level == zapcore.ErrorLevel || level == zapcore.FatalLevel
 	})
@@ -101,7 +116,7 @@ func NewLogger() *loggerImpl {
 		zapcore.NewCore(
 			zapcore.NewJSONEncoder(encConfig),
 			zapcore.Lock(os.Stdout),
-			infoLevel,
+			defaultLevelEnabler,
 		),
 		zapcore.NewCore(
 			zapcore.NewJSONEncoder(encConfig),
@@ -117,7 +132,7 @@ func NewLogger() *loggerImpl {
 				MaxBackups: 3,
 				MaxAge:     28, // days
 			}),
-			zap.InfoLevel,
+			defaultLevelEnabler,
 		),
 	)
 	zapLogger := zap.New(core, zap.AddCallerSkip(2))

@@ -15,13 +15,14 @@ import (
 )
 
 var httpPort = flag.Int("http_port", 50091, "The server http port")
+var verbose = flag.Bool("verbose", false, "log verbose")
 var otelExportAddr = flag.String("otel_export", "localhost:4317", "otel export grpc address")
 
 func main() {
 	flag.Parse()
 
 	version.Print()
-	log := logger.NewLogger()
+	log := logger.NewLogger(*verbose)
 
 	app := &appserver.HelloServiceService{}
 

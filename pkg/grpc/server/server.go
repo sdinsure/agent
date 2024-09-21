@@ -188,7 +188,7 @@ func (g *GrpcServer) LocalAddr() (string, error) {
 	} else {
 		err = errors.New("localaddr is not ready")
 	}
-	g.logger.Info("grpc local addr:%s\n", addr)
+	g.logger.Debug("grpc local addr:%s\n", addr)
 	return addr, err
 }
 
