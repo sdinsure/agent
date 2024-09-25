@@ -14,7 +14,7 @@ RUN go mod download
 
 RUN BUILDDIR=/out TAG=${BUILD_TAG} make example
 
-FROM alpine:3.20 AS bin
+FROM alpine:3.20.3 AS bin
 COPY --from=build /out /out
 
 EXPOSE 50090
