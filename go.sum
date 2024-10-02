@@ -204,8 +204,8 @@ go.opentelemetry.io/contrib/detectors/aws/ec2 v1.30.0 h1:rxDteGHWDfZ3QEPqyN4ZzaT
 go.opentelemetry.io/contrib/detectors/aws/ec2 v1.30.0/go.mod h1:oRFluXjREVUDMZ8dfwY4LJlJrbSWePeS5QgJ2oauwak=
 go.opentelemetry.io/contrib/detectors/aws/ecs v1.30.0 h1:tyAMwh9XYbINOpW62iYo2k7ZlPgjEulbEFudzlY8H1I=
 go.opentelemetry.io/contrib/detectors/aws/ecs v1.30.0/go.mod h1:NuMawOvkflSsTZAu3iF3ydeF4spFQUnf8DYjK8YdqYI=
-go.opentelemetry.io/contrib/detectors/gcp v1.29.0 h1:TiaiXB4DpGD3sdzNlYQxruQngn5Apwzi1X0DRhuGvDQ=
-go.opentelemetry.io/contrib/detectors/gcp v1.29.0/go.mod h1:GW2aWZNwR2ZxDLdv8OyC2G8zkRoQBuURgV7RPQgcPoU=
+go.opentelemetry.io/contrib/detectors/gcp v1.30.0 h1:GF+YVnUeJwOy+Ag2cTEpVZq+r2Tnci42FIiNwA2gjME=
+go.opentelemetry.io/contrib/detectors/gcp v1.30.0/go.mod h1:p5Av42vWKPezk67MQwLYZwlo/z6xLnN/upaIyQNWBGg=
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.54.0 h1:r6I7RJCN86bpD/FQwedZ0vSixDpwuWREjW9oRMsmqDc=
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.54.0/go.mod h1:B9yO6b04uB80CzjedvewuqDhxJxi11s7/GtiGa8bAjI=
 go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace v0.55.0 h1:sqmsIQ75l6lfZjjpnXXT9DFVtYEDg6CH0/Cn4/3A1Wg=
