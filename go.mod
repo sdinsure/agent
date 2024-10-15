@@ -23,18 +23,18 @@ require (
 	github.com/stretchr/testify v1.9.0
 	go.opentelemetry.io/contrib/detectors/aws/ec2 v1.30.0
 	go.opentelemetry.io/contrib/detectors/aws/ecs v1.30.0
-	go.opentelemetry.io/contrib/detectors/gcp v1.29.0
+	go.opentelemetry.io/contrib/detectors/gcp v1.31.0
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.54.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace v0.55.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.55.0
-	go.opentelemetry.io/otel v1.30.0
+	go.opentelemetry.io/otel v1.31.0
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v1.30.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.29.0
 	go.opentelemetry.io/otel/exporters/prometheus v0.52.0
 	go.opentelemetry.io/otel/exporters/stdout/stdoutmetric v1.30.0
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.30.0
-	go.opentelemetry.io/otel/metric v1.30.0
-	go.opentelemetry.io/otel/sdk v1.30.0
+	go.opentelemetry.io/otel/metric v1.31.0
+	go.opentelemetry.io/otel/sdk v1.31.0
 	go.opentelemetry.io/otel/sdk/metric v1.30.0
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.27.0
@@ -47,8 +47,8 @@ require (
 )
 
 require (
-	cloud.google.com/go/compute/metadata v0.5.0 // indirect
-	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.24.1 // indirect
+	cloud.google.com/go/compute/metadata v0.5.2 // indirect
+	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.24.2 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/aws/aws-sdk-go v1.55.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -99,14 +99,14 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.mongodb.org/mongo-driver v1.16.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.29.0 // indirect
-	go.opentelemetry.io/otel/trace v1.30.0 // indirect
+	go.opentelemetry.io/otel/trace v1.31.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.27.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/net v0.29.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.25.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.18.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240903143218-8af14fe29dc1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
