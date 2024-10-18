@@ -21,7 +21,7 @@ require (
 	github.com/prometheus/client_golang v1.20.4
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
-	go.opentelemetry.io/contrib/detectors/aws/ec2 v1.30.0
+	go.opentelemetry.io/contrib/detectors/aws/ec2 v1.31.0
 	go.opentelemetry.io/contrib/detectors/aws/ecs v1.30.0
 	go.opentelemetry.io/contrib/detectors/gcp v1.31.0
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.54.0
