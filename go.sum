@@ -202,8 +202,8 @@ go.mongodb.org/mongo-driver v1.16.1 h1:rIVLL3q0IHM39dvE+z2ulZLp9ENZKThVfuvN/IiN4
 go.mongodb.org/mongo-driver v1.16.1/go.mod h1:oB6AhJQvFQL4LEHyXi6aJzQJtBiTQHiAd83l0GdFaiw=
 go.opentelemetry.io/contrib/detectors/aws/ec2 v1.31.0 h1:7rHAIMvr/IGEvtOObixhFYNana7QBnMWR4URLj6I7+o=
 go.opentelemetry.io/contrib/detectors/aws/ec2 v1.31.0/go.mod h1:1MzGlM2L/Q5HBxhR6Tr84WXHEmufVkTZ1S2+OQ5kljg=
-go.opentelemetry.io/contrib/detectors/aws/ecs v1.30.0 h1:tyAMwh9XYbINOpW62iYo2k7ZlPgjEulbEFudzlY8H1I=
-go.opentelemetry.io/contrib/detectors/aws/ecs v1.30.0/go.mod h1:NuMawOvkflSsTZAu3iF3ydeF4spFQUnf8DYjK8YdqYI=
+go.opentelemetry.io/contrib/detectors/aws/ecs v1.32.0 h1:B/miSe8J7Jl669Qitisp7qF+ZHf6e512jSVvEW9ZR9E=
+go.opentelemetry.io/contrib/detectors/aws/ecs v1.32.0/go.mod h1:5ZG7LhkAhDjg5ugF75iJinsM8s4zaHRV6eyJokqiSSg=
 go.opentelemetry.io/contrib/detectors/gcp v1.31.0 h1:G1JQOreVrfhRkner+l4mrGxmfqYCAuy76asTDAo0xsA=
 go.opentelemetry.io/contrib/detectors/gcp v1.31.0/go.mod h1:tzQL6E1l+iV44YFTkcAeNQqzXUiekSYP9jjJjXwEd00=
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.56.0 h1:yMkBS9yViCc7U7yeLzJPM2XizlfdVvBRSmsQDWu6qc0=
