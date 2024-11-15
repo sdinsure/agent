@@ -1,8 +1,7 @@
 module github.com/sdinsure/agent
 
 go 1.22
-
-toolchain go1.22.5
+toolchain go1.22.9
 
 require (
 	github.com/felixge/httpsnoop v1.0.4
@@ -24,7 +23,7 @@ require (
 	go.opentelemetry.io/contrib/detectors/aws/ec2 v1.31.0
 	go.opentelemetry.io/contrib/detectors/aws/ecs v1.32.0
 	go.opentelemetry.io/contrib/detectors/gcp v1.32.0
-	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.56.0
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.57.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace v0.56.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.57.0
 	go.opentelemetry.io/otel v1.32.0
@@ -39,7 +38,7 @@ require (
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20241104194629-dd2ea8efbc28
-	google.golang.org/grpc v1.67.1
+	google.golang.org/grpc v1.68.0
 	google.golang.org/protobuf v1.35.1
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gorm.io/driver/postgres v1.5.9
