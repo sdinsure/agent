@@ -1,7 +1,6 @@
 module github.com/sdinsure/agent
 
-go 1.22
-toolchain go1.22.9
+go 1.23.2
 
 require (
 	github.com/felixge/httpsnoop v1.0.4

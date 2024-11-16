@@ -71,6 +71,9 @@ func getMetaValueFromCtx(ctx context.Context, key string) (string, bool) {
 	}
 	// --->md:map[:authority:[127.0.0.1:8081] authorization:[Bearer <>] content-type:[application/grpc] grpc-accept-encoding:[gzip] grpc-method:[/app.kafeido.Kafeido/GetProject] grpcgateway-accept:[application/json] grpcgateway-authorization:[Bearer <>] grpcgateway-user-agent:[Go-http-client/2.0] http-path:[/v1/projects/1] http-path-pattern:[/v1/projects/{projectId}] http-verb:[GET] remote-addr:[127.0.0.6:42301] user-agent:[grpc-go/1.55.0] x-forwarded-for:[10.244.0.0, 127.0.0.6] x-forwarded-host:[dev01.example.com]]
 	founds := md.Get(key)
+	if len(founds) == 0 {
+		return "", true
+	}
 	return founds[0], true
 }
 
