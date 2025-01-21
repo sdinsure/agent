@@ -21,7 +21,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	go.opentelemetry.io/contrib/detectors/aws/ec2 v1.33.0
 	go.opentelemetry.io/contrib/detectors/aws/ecs v1.32.0
-	go.opentelemetry.io/contrib/detectors/gcp v1.32.0
+	go.opentelemetry.io/contrib/detectors/gcp v1.34.0
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.57.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace v0.58.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.58.0
@@ -45,7 +45,7 @@ require (
 )
 
 require (
-	cloud.google.com/go/compute/metadata v0.5.2 // indirect
+	cloud.google.com/go/compute/metadata v0.6.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.25.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/aws/aws-sdk-go v1.55.5 // indirect
