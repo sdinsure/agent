@@ -22,7 +22,7 @@ require (
 	go.opentelemetry.io/contrib/detectors/aws/ec2 v1.33.0
 	go.opentelemetry.io/contrib/detectors/aws/ecs v1.32.0
 	go.opentelemetry.io/contrib/detectors/gcp v1.34.0
-	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.57.0
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.59.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace v0.58.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.58.0
 	go.opentelemetry.io/otel v1.34.0
