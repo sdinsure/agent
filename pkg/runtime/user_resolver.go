@@ -62,6 +62,12 @@ func (i *IdentityResolver) UserInfo(ctx context.Context) (UserInfor, bool) {
 	return infov, castable
 }
 
+func UserInfo(ctx context.Context) (UserInfor, bool) {
+	info := ctx.Value(userInfoKey{})
+	infov, castable := info.(UserInfor)
+	return infov, castable
+}
+
 type TypeUserID string
 
 func NewTypeUserID(s string) TypeUserID {
