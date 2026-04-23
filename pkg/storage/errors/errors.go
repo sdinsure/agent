@@ -3,7 +3,7 @@ package storageerrors
 import (
 	"errors"
 
-	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v5/pgconn"
 	pgerrcode "github.com/jackc/pgerrcode"
 	sdierrors "github.com/sdinsure/agent/pkg/errors"
 	"gorm.io/gorm"
