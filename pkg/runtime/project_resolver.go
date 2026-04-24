@@ -21,6 +21,18 @@ type ProjectResolver interface {
 type ProjectInfor interface {
 	GetProjectID() (string, error)
 	GetProject(v any) error
+
+	// Visibility returns an opaque visibility tag for this project
+	// (e.g. "PUBLIC", "TEAM", "ONLYOWNER"). The concrete string values
+	// are defined by the consumer; sdinsure only guarantees that callers
+	// can retrieve whatever the ProjectGetter stored. An empty string
+	// means unknown / unresolved (e.g. invalidProjectInfor).
+	//
+	// This exists so consumers don't need to round-trip through
+	// GetProject(v any) + reflection + field pluck just to read a
+	// well-known tag; visibility is queried on the authorization hot
+	// path for every guarded RPC.
+	Visibility() string
 }
 
 func NewProjectResolver(log logger.Logger, projectGetter ProjectGetter) *projectResolver {
@@ -96,4 +108,8 @@ func (i invalidProjectInfor) GetProjectID() (string, error) {
 
 func (i invalidProjectInfor) GetProject(v any) error {
 	return sdinsureerrors.NewBadParamsError(errors.New("invalid projectid"))
+}
+
+func (i invalidProjectInfor) Visibility() string {
+	return ""
 }
