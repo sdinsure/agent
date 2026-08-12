@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type Code int
@@ -160,4 +163,65 @@ func newContextError(err error) *Error {
 	default:
 		return NewUnknownError(err)
 	}
+}
+
+// GRPCStatus maps this error's Code onto a gRPC status.
+//
+// Without it, *Error is an ordinary Go error, so grpc-go classifies every one
+// of them as codes.Unknown. The semantic Code is carried in the message text
+// and nowhere the transport can see it, which means a caller gets the same
+// answer for "you are not authenticated", "that does not exist" and "the
+// database is down".
+//
+// Through grpc-gateway that becomes HTTP 500 for all of them. A missing
+// credential is reported to a browser as a server fault:
+//
+//	{"code":2, "message":"code(3), auth: no valid auth and non-annonymous access"}
+//
+// where code 2 is Unknown and code(3) is CodeInvalidAuth - the real reason,
+// visible only by reading the string. A client cannot act on that: 401 sends
+// you to a login screen, 500 makes you retry.
+//
+// grpc-go looks for this method (status.FromError checks the GRPCStatus
+// interface), so implementing it is all that is needed - no call site changes.
+func (f *Error) GRPCStatus() *status.Status {
+	if f == nil {
+		return status.New(codes.OK, "")
+	}
+	return status.New(f.code.GRPCCode(), f.Error())
+}
+
+// GRPCCode is the gRPC code this Code corresponds to.
+//
+// Kept as a method on Code rather than inline so callers can map without
+// constructing an Error, and so the correspondence is readable in one place.
+func (c Code) GRPCCode() codes.Code {
+	switch c {
+	case CodeNotFound:
+		return codes.NotFound
+	case CodeStatusConflicted:
+		return codes.AlreadyExists
+	case CodeInvalidAuth:
+		// Unauthenticated, not PermissionDenied: this is raised when there is
+		// no usable credential at all, which is 401. PermissionDenied (403)
+		// would say the caller is known and refused, a different thing.
+		return codes.Unauthenticated
+	case CodeBadParameters:
+		return codes.InvalidArgument
+	case CodeTimeout:
+		return codes.DeadlineExceeded
+	case CodeInternal:
+		return codes.Internal
+	case CodeNoMoreRetry:
+		return codes.Aborted
+	case CodeBadGateway:
+		return codes.Unavailable
+	case CodeNotImpl:
+		return codes.Unimplemented
+	case CodeUnknown:
+		return codes.Unknown
+	}
+	// A Code this switch has not been taught about. Unknown is the honest
+	// answer and preserves today's behaviour for it.
+	return codes.Unknown
 }
