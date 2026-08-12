@@ -21,7 +21,10 @@ func TestErrorCarriesItsGRPCStatus(t *testing.T) {
 	}{
 		// The case that prompted this: a request with no credential was
 		// reported to clients as a server fault instead of 401.
-		{"missing credential", NewInvalidAuth(errors.New("no valid auth")), codes.Unauthenticated},
+		// CodeInvalidAuth covers BOTH "no credential" and "known caller
+		// refused", so it maps to PermissionDenied - see the switch for why
+		// one code cannot be both 401 and 403.
+		{"invalid auth", NewInvalidAuth(errors.New("no valid auth")), codes.PermissionDenied},
 		{"not found", New(CodeNotFound, errors.New("nope")), codes.NotFound},
 		{"conflict", NewStatusConflicted(errors.New("exists")), codes.AlreadyExists},
 		{"bad parameters", NewBadParamsError(errors.New("bad")), codes.InvalidArgument},
@@ -63,7 +66,7 @@ func TestWrappedErrorKeepsItsCode(t *testing.T) {
 	if !ok {
 		t.Fatal("status.FromError did not recognise the wrapped error")
 	}
-	if st.Code() != codes.Unauthenticated {
-		t.Errorf("wrapped code = %v, want Unauthenticated", st.Code())
+	if st.Code() != codes.PermissionDenied {
+		t.Errorf("wrapped code = %v, want PermissionDenied", st.Code())
 	}
 }
