@@ -202,10 +202,25 @@ func (c Code) GRPCCode() codes.Code {
 	case CodeStatusConflicted:
 		return codes.AlreadyExists
 	case CodeInvalidAuth:
-		// Unauthenticated, not PermissionDenied: this is raised when there is
-		// no usable credential at all, which is 401. PermissionDenied (403)
-		// would say the caller is known and refused, a different thing.
-		return codes.Unauthenticated
+		// PermissionDenied (403), NOT Unauthenticated (401).
+		//
+		// This code is raised for BOTH kinds of rejection: the authn
+		// middleware uses it when there is no usable credential, and the
+		// authz middleware uses it when a known caller is refused. One code
+		// cannot mean both 401 and 403, so it has to pick the one that is
+		// wrong less often - and telling an authenticated user "log in" is
+		// the more misleading of the two, because it sends them round a loop
+		// that cannot fix anything.
+		//
+		// This also matches what the known consumer already does downstream:
+		// footprintai/grandturks translates CodeInvalidAuth to
+		// PermissionDenied at its middleware edge, with the same reasoning
+		// (grandturks#775).
+		//
+		// Splitting 401 from 403 properly needs a SEPARATE code for "no
+		// credential presented"; that is a wider change than this one and
+		// would want the middlewares updated to use it.
+		return codes.PermissionDenied
 	case CodeBadParameters:
 		return codes.InvalidArgument
 	case CodeTimeout:
